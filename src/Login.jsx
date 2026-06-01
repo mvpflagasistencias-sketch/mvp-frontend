@@ -12,8 +12,8 @@ const Login = ({ onLoginSuccess }) => {
     setCargando(true);
     
     try {
-      // Usamos api.post y la ruta relativa configurada en el .env
-      const res = await api.post('/api/staff/login', {
+      // CORRECCIÓN: Quitamos el '/api' inicial para evitar que se duplique con la baseURL
+      const res = await api.post('/staff/login', {
         usuario,
         password
       });
