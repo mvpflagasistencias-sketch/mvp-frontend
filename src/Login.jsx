@@ -14,9 +14,9 @@ const Login = ({ onLoginSuccess }) => {
     try {
       // CORRECCIÓN: Quitamos el '/api' inicial para evitar que se duplique con la baseURL
       const res = await api.post('/api/staff/login', {
-        usuario,
-        password
-      });
+  usuario,
+  password
+});
 
       console.log("Respuesta del servidor:", res.data);
 
