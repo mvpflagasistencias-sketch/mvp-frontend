@@ -9,6 +9,17 @@ const MonitorAsistencias = ({ onBack }) => {
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // MODIFICACIÓN: Función de texto plano para evitar el truco visual del navegador
+  const formatearFechaLimpia = (fechaStr) => {
+    if (!fechaStr) return '';
+    const partes = fechaStr.split('-'); 
+    if (partes.length !== 3) return fechaStr; 
+    const anyo = partes[0];
+    const mes = partes[1];
+    const dia = partes[2];
+    return `${dia}/${mes}/${anyo}`;
+  };
+
   const cargarAsistencias = async () => {
     try {
       const res = await api.get('/api/asistencias/recientes');
@@ -129,7 +140,8 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
                 <div>
                   <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Fecha</p>
-                  <p className="text-white font-mono">{new Date(asistenciaSeleccionada.fecha).toLocaleDateString()}</p>
+                  {/* CORRECCIÓN APLICADA: Ahora jala el string mapeado directamente sin restar un día */}
+                  <p className="text-white font-mono">{formatearFechaLimpia(asistenciaSeleccionada.fecha)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Hora Exacta</p>
