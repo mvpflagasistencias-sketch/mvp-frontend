@@ -2,14 +2,27 @@ import { useState, useEffect } from 'react';
 import api from './api';
 
 const MonitorAsistencias = ({ onBack }) => {
-  const [asistencias, setAsistencias] = useState([]);
-  const [filtro, setFiltro] = useState('');
+  // PESTAÑA ACTIVA: 'partidos', 'historial', 'metricas'
+  const [activeTab, setActiveTab] = useState('partidos');
+
+  // ESTADOS DE DATOS
+  const [partidosAgrupados, setPartidosAgrupados] = useState([]);
+  const [historialCompleto, setHistorialCompleto] = useState([]);
+  const [asistenciasRecientes, setAsistenciasRecientes] = useState([]);
+
+  // ESTADOS DE FILTROS
+  const [filtroTexto, setFiltroTexto] = useState('');
+  const [filtroJornada, setFiltroJornada] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+
+  // ESTADO DE SELECCIÓN PARA EXPANDIR UN PARTIDO
+  const [partidoExpandido, setPartidoExpandido] = useState(null);
   
-  // NUEVO: Estado para el modal de detalles
+  // CONTROL DEL MODAL DETALLADO ORIGINAL
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // MODIFICACIÓN: Función de texto plano para evitar el truco visual del navegador
+  // FUNCIÓN DE FORMATEO EXCLUSIVA ORIGINAL
   const formatearFechaLimpia = (fechaStr) => {
     if (!fechaStr) return '';
     const partes = fechaStr.split('-'); 
@@ -20,104 +33,360 @@ const MonitorAsistencias = ({ onBack }) => {
     return `${dia}/${mes}/${anyo}`;
   };
 
-  const cargarAsistencias = async () => {
+  // CARGA DE DATOS BASADA EN LA PESTAÑA SELECCIONADA
+  const cargarDatosSincronizados = async () => {
     try {
-      const res = await api.get('/api/asistencias/recientes');
-      setAsistencias(res.data);
+      if (activeTab === 'partidos') {
+        // Petición al endpoint 1 con queries dynamic
+        let url = '/api/asistencias/agrupadas';
+        const params = [];
+        if (filtroJornada) params.push(`jornada=${filtroJornada}`);
+        if (filtroCategoria) params.push(`categoria=${filtroCategoria}`);
+        if (params.length > 0) url += `?${params.join('&')}`;
+
+        const res = await api.get(url);
+        setPartidosAgrupados(res.data);
+      } else if (activeTab === 'historial') {
+        // Petición al endpoint 2 con filtros dinámicos
+        let url = '/api/asistencias/historial';
+        const params = [];
+        if (filtroJornada) params.push(`jornada=${filtroJornada}`);
+        if (filtroTexto) params.push(`buscar=${filtroTexto}`);
+        if (params.length > 0) url += `?${params.join('&')}`;
+
+        const res = await api.get(url);
+        setHistorialCompleto(res.data);
+      } else if (activeTab === 'metricas') {
+        // Alimentamos métricas jalando el universo completo del historial
+        const res = await api.get('/api/asistencias/historial');
+        setAsistenciasRecientes(res.data);
+      }
     } catch (err) {
-      console.error("Error al cargar asistencias", err);
+      console.error("❌ Error en la sincronización web:", err);
     }
   };
 
+  // Polling automático en tiempo real cada 5 segundos
   useEffect(() => {
-    cargarAsistencias();
-    const intervalo = setInterval(cargarAsistencias, 5000);
+    cargarDatosSincronizados();
+    const intervalo = setInterval(cargarDatosSincronizados, 5000);
     return () => clearInterval(intervalo);
-  }, []);
+  }, [activeTab, filtroJornada, filtroCategoria, filtroTexto]);
 
-  const asistenciasFiltradas = asistencias.filter((a) => {
-    const term = filtro.toLowerCase();
-    return (
-      a.jugador.toLowerCase().includes(term) ||
-      (a.nombre_equipo && a.nombre_equipo.toLowerCase().includes(term)) ||
-      (a.staff && a.staff.toLowerCase().includes(term))
-    );
-  });
-
-  // NUEVO: Abrir modal
+  // ABRIR MODAL ORIGINAL
   const verDetalle = (asistencia) => {
     setAsistenciaSeleccionada(asistencia);
     setIsModalOpen(true);
   };
 
+  // CONTADORES MATEMÁTICOS PARA LA PESTAÑA DE MÉTRICAS (MERN)
+  const totalPasesRegistrados = asistenciasRecientes.length;
+  const pasesConGps = asistenciasRecientes.filter(a => a.latitud).length;
+  const jornadasUnicas = [...new Set(asistenciasRecientes.map(a => a.jornada).filter(Boolean))].sort((a,b)=>a-b);
+  const categoriasUnicas = [...new Set(asistenciasRecientes.map(a => a.categoria).filter(Boolean))];
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left relative">
+      
+      {/* ENCABEZADO ORIGINAL */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
           <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Monitor de Campo</h2>
           <p className="text-green-400 font-bold text-xs uppercase tracking-widest">Sincronización en Tiempo Real</p>
         </div>
-
-        <div className="w-full md:w-80">
-          <input 
-            type="text"
-            placeholder="🔎 BUSCAR EN BITÁCORA EN VIVO..."
-            className="w-full bg-[#0f172a] border border-green-500/30 p-3 rounded-xl text-green-400 text-xs font-bold outline-none focus:border-green-500 transition-all placeholder:text-gray-700 uppercase"
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
-          />
-        </div>
-
         <button onClick={onBack} className="text-gray-500 hover:text-white text-xs font-bold uppercase transition-colors">
           ← Volver
         </button>
       </div>
 
-      <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
-        <table className="w-full text-left">
-          <thead className="bg-[#0f172a] text-green-400 text-[10px] uppercase font-black tracking-widest">
-            <tr>
-              <th className="p-5">Atleta / Equipo</th>
-              <th className="p-5">Registrado por</th>
-              <th className="p-5">Hora</th>
-              <th className="p-5 text-center">Estatus</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800">
-            {asistenciasFiltradas.map((a) => (
-              <tr 
-                key={a.id_asistencia} 
-                onClick={() => verDetalle(a)} // HACER FILA CLICKABLE
-                className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
-              >
-                <td className="p-5">
-                  <p className="font-bold text-white uppercase text-sm">{a.jugador} 🔍</p>
-                  <p className="text-[10px] text-gray-500 uppercase">{a.nombre_equipo || 'Independiente'}</p>
-                </td>
-                <td className="p-5 text-gray-400 text-xs font-bold uppercase italic">
-                  {a.staff}
-                </td>
-                <td className="p-5 text-white font-mono text-sm">
-                  {a.hora}
-                </td>
-                <td className="p-5 text-center">
-                  <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                    {a.latitud ? '📍 Geocalizado' : 'Check-in OK'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* SYSTEM TABS: Selector de barra superior */}
+      <div className="flex border-b border-gray-800 gap-2 pt-2">
+        <button 
+          onClick={() => { setActiveTab('partidos'); setPartidoExpandido(null); }}
+          className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'partidos' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+        >
+          🏈 Por Partidos
+        </button>
+        <button 
+          onClick={() => setActiveTab('historial')}
+          className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'historial' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+        >
+          📋 Historial General
+        </button>
+        <button 
+          onClick={() => setActiveTab('metricas')}
+          className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'metricas' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+        >
+          📊 Métricas y Reportes
+        </button>
+      </div>
+
+      {/* --- PANEL DE FILTROS DINÁMICOS ADAPTABLES --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800">
         
-        {asistenciasFiltradas.length === 0 && (
-          <div className="p-10 text-center text-gray-500 italic">
-            {filtro ? 'No hay coincidencias...' : 'Esperando escaneos...'}
+        {/* Filtro por Jornada (Disponible en Partidos e Historial) */}
+        {(activeTab === 'partidos' || activeTab === 'historial') && (
+          <div>
+            <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Jornada</label>
+            <select 
+              value={filtroJornada} 
+              onChange={(e) => { setFiltroJornada(e.target.value); setPartidoExpandido(null); }}
+              className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white text-xs font-bold outline-none focus:border-green-500 transition-all uppercase"
+            >
+              <option value="">Todas las Jornadas</option>
+              {[...Array(12).keys()].map(n => (
+                <option key={n+1} value={n+1}>Jornada {n+1}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Filtro por Categoría (Exclusivo de Pestaña Partidos) */}
+        {activeTab === 'partidos' && (
+          <div>
+            <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Categoría</label>
+            <select 
+              value={filtroCategoria} 
+              onChange={(e) => { setFiltroCategoria(e.target.value); setPartidoExpandido(null); }}
+              className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white text-xs font-bold outline-none focus:border-green-500 transition-all"
+            >
+              <option value="">Todas las Categorías</option>
+              <option value="Femenil">Femenil</option>
+              <option value="Varonil">Varonil</option>
+              <option value="Mixto (Coed)">Mixto (Coed)</option>
+              <option value="Golden (Mayores)">Golden (Mayores)</option>
+            </select>
+          </div>
+        )}
+
+        {/* Buscador de Texto (Exclusivo de Historial General) */}
+        {activeTab === 'historial' && (
+          <div className="md:col-span-2">
+            <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Búsqueda rápida</label>
+            <input 
+              type="text"
+              placeholder="🔎 BUSCAR POR ATLETA O EQUIPO..."
+              className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-green-400 text-xs font-bold outline-none focus:border-green-500 transition-all placeholder:text-gray-700 uppercase"
+              value={filtroTexto}
+              onChange={(e) => setFiltroTexto(e.target.value)}
+            />
+          </div>
+        )}
+
+        {activeTab === 'metricas' && (
+          <div className="col-span-3 py-2 text-center text-gray-400 text-xs font-bold uppercase tracking-wider italic">
+            📈 Resumen Estadístico de Operaciones en Campo
           </div>
         )}
       </div>
 
-      {/* NUEVO: MODAL DE DETALLE DE ASISTENCIA */}
+      {/* ================= PESTAÑA 1: POR PARTIDOS ================= */}
+      {activeTab === 'partidos' && (
+        <div className="grid grid-cols-1 gap-4">
+          {partidosAgrupados.map((p, idx) => {
+            const matchKey = `${p.jornada}-${p.categoria}-${p.equipo_local}-${p.equipo_visitante}`;
+            const isSelected = partidoExpandido === matchKey;
+
+            return (
+              <div 
+                key={idx} 
+                className={`bg-[#1e293b] rounded-3xl border transition-all overflow-hidden shadow-xl ${isSelected ? 'border-green-500 ring-1 ring-green-500/30' : 'border-gray-800 hover:border-gray-700'}`}
+              >
+                {/* Cabecera del Partido */}
+                <div 
+                  onClick={() => setPartidoExpandido(isSelected ? null : matchKey)}
+                  className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer select-none bg-[#131b2e]/60"
+                >
+                  <div>
+                    <div className="flex gap-2 mb-1 items-center">
+                      <span className="bg-blue-900/40 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">Jornada {p.jornada}</span>
+                      <span className="bg-purple-900/40 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">{p.categoria || 'Sin Categoría'}</span>
+                    </div>
+                    <h3 className="text-xl font-extrabold text-white uppercase tracking-tight">
+                      {p.equipo_local} <span className="text-green-500 font-black text-sm lowercase px-1">vs</span> {p.equipo_visitante}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-500 font-bold uppercase">Roster Asistente</p>
+                      <p className="text-lg font-black text-white font-mono">{p.total_asistencias} <span className="text-xs text-green-400 font-bold">JUGS</span></p>
+                    </div>
+                    {p.foto_partido && (
+                      <div className="w-12 h-12 bg-gray-900 border border-gray-700 rounded-xl overflow-hidden flex items-center justify-center">
+                        <img src={p.foto_partido} alt="Roster" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <span className="text-gray-500 font-bold text-sm">{isSelected ? '▲' : '▼'}</span>
+                  </div>
+                </div>
+
+                {/* Sub-Tabla Desplegable de Jugadores del Partido */}
+                {isSelected && (
+                  <div className="border-t border-gray-800 bg-[#0f172a]/50 p-4 animate-in slide-in-from-top-4 duration-300">
+                    
+                    {/* Visualizador de la foto de bitácora real */}
+                    {p.foto_partido && (
+                      <div className="mb-4 p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                          <p className="text-green-400 text-xs font-black uppercase tracking-wider">📸 Evidencia Fotográfica Colectiva</p>
+                          <p className="text-gray-500 text-[10px] uppercase">Planilla firmada registrada por el oficial de campo</p>
+                        </div>
+                        <a 
+                          href={p.foto_partido} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="bg-gray-800 text-white text-[10px] px-4 py-2 rounded-xl font-bold uppercase hover:bg-gray-700 transition-all"
+                        >
+                          👁️ Ver Imagen Completa
+                        </a>
+                      </div>
+                    )}
+
+                    <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#141b2e]/40">
+                      <table className="w-full text-left">
+                        <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
+                          <tr>
+                            <th className="p-4">Nombre del Atleta</th>
+                            <th className="p-4">Oficial Monitor</th>
+                            <th className="p-4">Hora Check-in</th>
+                            <th className="p-4 text-center">Estatus</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800/60 text-xs">
+                          {p.jugadores.map((j, subIdx) => (
+                            <tr 
+                              key={subIdx}
+                              onClick={() => verDetalle({
+                                jugador: j.jugador_nombre,
+                                nombre_equipo: j.equipo_nombre,
+                                staff: j.staff_nombre,
+                                fecha: j.fecha,
+                                hora: j.hora,
+                                latitud: j.latitud,
+                                longitud: j.longitud
+                              })}
+                              className="hover:bg-green-500/5 cursor-pointer transition-all"
+                            >
+                              <td className="p-4 font-bold text-white uppercase">{j.jugador_nombre}</td>
+                              <td className="p-4 text-gray-400 italic uppercase">{j.staff_nombre}</td>
+                              <td className="p-4 font-mono text-white">{j.hora}</td>
+                              <td className="p-4 text-center">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? 'bg-green-950 text-green-400 border border-green-800' : 'bg-gray-800 text-gray-400'}`}>
+                                  {j.latitud ? '📍 GPS OK' : 'OK'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {partidosAgrupados.length === 0 && (
+            <div className="bg-[#1e293b] p-12 text-center rounded-3xl border border-gray-800 text-gray-500 italic">
+              No hay partidos registrados bajo los criterios de filtrado seleccionados.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
+      {activeTab === 'historial' && (
+        <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-[#0f172a] text-green-400 text-[10px] uppercase font-black tracking-widest">
+              <tr>
+                <th className="p-5">Atleta / Enfrentamiento</th>
+                <th className="p-5">Registrado por</th>
+                <th className="p-5">Fecha / Hora</th>
+                <th className="p-5 text-center">Estatus</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {historialCompleto.map((a) => (
+                <tr 
+                  key={a.id_asistencia} 
+                  onClick={() => verDetalle({
+                    jugador: a.jugador_nombre,
+                    nombre_equipo: a.jugador_equipo_original,
+                    staff: a.staff_nombre,
+                    fecha: a.fecha,
+                    hora: a.hora,
+                    latitud: a.latitud,
+                    longitud: a.longitud
+                  })}
+                  className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
+                >
+                  <td className="p-5">
+                    <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-medium">
+                      J{a.jornada} - {a.equipo_local} <span className="text-green-500 font-bold">vs</span> {a.equipo_visitante}
+                    </p>
+                  </td>
+                  <td className="p-5 text-gray-400 text-xs font-bold uppercase italic">
+                    {a.staff_nombre}
+                  </td>
+                  <td className="p-5 text-xs">
+                    <p className="text-white font-mono">{a.hora}</p>
+                    <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                      {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {historialCompleto.length === 0 && (
+            <div className="p-10 text-center text-gray-500 italic">
+              No hay coincidencias en el historial de pases...
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= PESTAÑA 3: MÉTRICAS Y REPORTES ================= */}
+      {activeTab === 'metricas' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Tarjeta de Contadores Rápidos */}
+          <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-800 space-y-4">
+            <h3 className="text-white font-black uppercase tracking-tight text-lg">Resumen Operativo</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-[#0f172a] p-4 rounded-2xl border border-gray-800 text-left">
+                <p className="text-gray-500 text-[9px] font-black uppercase tracking-wider">Escaneos Totales</p>
+                <p className="text-3xl font-mono font-black text-green-400">{totalPasesRegistrados}</p>
+              </div>
+              <div className="bg-[#0f172a] p-4 rounded-2xl border border-gray-800 text-left">
+                <p className="text-gray-500 text-[9px] font-black uppercase tracking-wider">Auditorías GPS</p>
+                <p className="text-3xl font-mono font-black text-blue-400">{pasesConGps}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarjeta de Resumen de Torneo */}
+          <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-800 space-y-3">
+            <h3 className="text-white font-black uppercase tracking-tight text-lg">Alcance de la Liga</h3>
+            <div className="space-y-2 text-xs text-gray-400 uppercase font-bold">
+              <p>📌 Jornadas con Actividad Real: <span className="text-white font-mono">{jornadasUnicas.length === 0 ? 0 : jornadasUnicas.join(', ')}</span></p>
+              <p>🏆 Categorías en Operación Móvil: <span className="text-white font-mono">{categoriasUnicas.length === 0 ? 'Esperando...' : categoriasUnicas.join(', ')}</span></p>
+              <p>⚡ Tasa de Cobertura de Geolocalización: <span className="text-green-400 font-mono">
+                {totalPasesRegistrados > 0 ? `${((pasesConGps / totalPasesRegistrados) * 100).toFixed(1)}%` : '0%'}
+              </span></p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL DE DETALLE ORIGINAL SIN ALTERACIONES ================= */}
       {isModalOpen && asistenciaSeleccionada && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
@@ -140,7 +409,6 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
                 <div>
                   <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Fecha</p>
-                  {/* CORRECCIÓN APLICADA: Ahora jala el string mapeado directamente sin restar un día */}
                   <p className="text-white font-mono">{formatearFechaLimpia(asistenciaSeleccionada.fecha)}</p>
                 </div>
                 <div>
@@ -149,7 +417,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN DE MAPA */}
+              {/* SECCIÓN DE MAPA ORIGINAL */}
               <div className="pt-4 border-t border-gray-700">
                 {asistenciaSeleccionada.latitud ? (
                   <div className="space-y-4">
