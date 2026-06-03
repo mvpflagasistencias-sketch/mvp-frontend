@@ -22,6 +22,9 @@ const MonitorAsistencias = ({ onBack }) => {
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // NUEVO: Estado exclusivo para controlar el Modal de la Foto sin abrir otra página
+  const [fotoModalUrl, setFotoModalUrl] = useState(null);
+
   // FUNCIÓN DE FORMATEO EXCLUSIVA ORIGINAL
   const formatearFechaLimpia = (fechaStr) => {
     if (!fechaStr) return '';
@@ -232,14 +235,13 @@ const MonitorAsistencias = ({ onBack }) => {
                           <p className="text-green-400 text-xs font-black uppercase tracking-wider">📸 Evidencia Fotográfica Colectiva</p>
                           <p className="text-gray-500 text-[10px] uppercase">Planilla firmada registrada por el oficial de campo</p>
                         </div>
-                        <a 
-                          href={p.foto_partido} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="bg-gray-800 text-white text-[10px] px-4 py-2 rounded-xl font-bold uppercase hover:bg-gray-700 transition-all"
+                        {/* MODIFICACIÓN: Cambiamos la etiqueta 'a' por un 'button' que activa nuestro modal en el mismo lugar */}
+                        <button 
+                          onClick={() => setFotoModalUrl(p.foto_partido)}
+                          className="bg-green-600 text-white text-[10px] px-5 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-green-500 transition-all shadow-lg shadow-green-900/20"
                         >
                           👁️ Ver Imagen Completa
-                        </a>
+                        </button>
                       </div>
                     )}
 
@@ -453,6 +455,49 @@ const MonitorAsistencias = ({ onBack }) => {
           </div>
         </div>
       )}
+
+      {/* ================= MODAL EXCLUSIVO: VISUALIZADOR INLINE DE LA FOTO DEL PARTIDO ================= */}
+      {fotoModalUrl && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="relative bg-[#1e293b] w-full max-w-3xl rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            
+            {/* Cabecera del visor */}
+            <div className="bg-[#0f172a] p-5 flex justify-between items-center border-b border-gray-800">
+              <div>
+                <p className="text-green-400 text-[9px] font-black uppercase tracking-widest italic">Visor de Evidencia Real</p>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Planilla del Encuentro</h3>
+              </div>
+              <button 
+                onClick={() => setFotoModalUrl(null)}
+                className="text-gray-500 hover:text-white text-xs font-black uppercase tracking-wider bg-gray-900 px-3 py-2 rounded-xl border border-gray-800 transition-all"
+              >
+                ✕ Cerrar
+              </button>
+            </div>
+
+            {/* Contenedor de la Imagen Base64 Expandida */}
+            <div className="p-6 bg-[#0f172a]/40 flex items-center justify-center max-h-[70vh] overflow-y-auto">
+              <img 
+                src={fotoModalUrl} 
+                alt="Planilla Evidencia Roster" 
+                className="w-full h-auto max-h-[65vh] object-contain rounded-xl border border-gray-800 shadow-inner"
+              />
+            </div>
+
+            {/* Pie del modal */}
+            <div className="bg-[#0f172a] p-4 text-center border-t border-gray-800">
+              <button 
+                onClick={() => setFotoModalUrl(null)}
+                className="bg-gray-800 text-gray-400 text-xs font-black uppercase tracking-widest py-3 px-8 rounded-xl hover:bg-gray-700 hover:text-white transition-all w-full sm:w-auto"
+              >
+                Volver al Monitor
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
