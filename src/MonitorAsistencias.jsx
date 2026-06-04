@@ -414,12 +414,10 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* ================= MODAL DETALLE DE PERFIL DE ATLETA ================= */}
       {isModalOpen && asistenciaSeleccionada && (
-        // MODIFICACIÓN EXCLUSIVA: Al hacer clic en este fondo negro flotante, se cierra el modal
         <div 
           onClick={() => setIsModalOpen(false)} 
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-          {/* PreventPropagation evita que el modal se cierre si le picas adentro al panel de contenido */}
           <div 
             onClick={(e) => e.stopPropagation()} 
             className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300"
@@ -450,6 +448,90 @@ const MonitorAsistencias = ({ onBack }) => {
                   <p className="text-white font-mono">{asistenciaSeleccionada.hora}</p>
                 </div>
               </div>
+
+              {/* SECCIÓN HISTÓRICA ACUMULADA CON BOTÓN DE MAPA POR REGISTRO */}
+              <div className="pt-4 border-t border-gray-800 space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
+                  <span className="bg-green-950 text-green-400 text-[9px] border border-green-800 px-2 py-0.5 rounded font-black font-mono">
+                    {acumuladasJugador.length} ASISTENCIAS
+                  </span>
+                </div>
+
+                <div className="max-h-64 overflow-y-auto space-y-2 pr-1 rounded-2xl custom-scrollbar">
+                  {acumuladasJugador.map((ac, acIdx) => (
+                    <div 
+                      key={ac.id_asistencia || acIdx} 
+                      className="bg-[#0f172a]/70 border border-gray-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-gray-700 transition-all shadow-inner"
+                    >
+                      {/* Lado Izquierdo: Datos del Partido */}
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="bg-blue-950 text-blue-400 text-[8px] font-black uppercase px-1.5 py-0.5 rounded border border-blue-900/40">
+                            J{ac.jornada}
+                          </span>
+                          <span className="text-gray-400 font-black tracking-tight text-[10px] uppercase truncate">
+                            {ac.categoria}
+                          </span>
+                        </div>
+                        <p className="text-white font-extrabold text-xs uppercase tracking-tight truncate">
+                          {ac.equipo_local} <span className="text-green-500 font-medium text-[10px]">vs</span> {ac.equipo_visitante}
+                        </p>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase italic truncate">
+                          📡 monitor: {ac.staff_nombre}
+                        </p>
+                      </div>
+
+                      {/* Lado Derecho: Tiempos + Botón de Auditoría GPS individual */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right flex flex-col items-end justify-center gap-0.5">
+                          <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
+                            {ac.hora}
+                          </span>
+                          <p className="text-gray-500 font-mono text-[9px] font-semibold">
+                            {formatearFechaLimpia(ac.fecha)}
+                          </p>
+                        </div>
+
+                        {/* Si el registro específico tiene coordenadas, pintamos su botón de mapas */}
+                        {ac.latitud ? (
+                          <a 
+                            href={`https://www.google.com/maps?q=${ac.latitud},${ac.longitud || ac.latitud}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2.5 rounded-xl border border-blue-500/30 transition-all shadow-md active:scale-95"
+                            title="Ver ubicación exacta de este escaneo"
+                          >
+                            📍
+                          </a>
+                        ) : (
+                          <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none">
+                            ❌
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {acumuladasJugador.length === 0 && (
+                    <div className="bg-[#0f172a]/40 border border-dashed border-gray-800 p-8 text-center rounded-2xl text-gray-600 text-xs italic uppercase font-bold tracking-wider">
+                      Sin récord histórico de pases para este torneo.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CIERRE DEL PANEL */}
+              <button  
+                onClick={() => setIsModalOpen(false)}
+                className="w-full bg-gray-800 text-gray-400 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-700 hover:text-white transition-all pt-4"
+              >
+                Cerrar Perfil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
               {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
