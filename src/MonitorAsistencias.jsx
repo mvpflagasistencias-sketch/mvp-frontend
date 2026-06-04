@@ -471,6 +471,66 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
+              {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
+{activeTab === 'historial' && (
+  <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
+    <table className="w-full text-left">
+      <thead className="bg-[#0f172a] text-green-400 text-[10px] uppercase font-black tracking-widest">
+        <tr>
+          <th className="p-5">Atleta / Enfrentamiento</th>
+          <th className="p-5">Registrado por</th>
+          <th className="p-5">Fecha / Hora</th>
+          <th className="p-5 text-center">Estatus</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-800">
+        {historialCompleto.map((a) => (
+          <tr 
+            key={a.id_asistencia} 
+            // CORRECCIÓN DIRECTA AQUÍ: Aseguramos mapear tanto jugador_id como id_jugador
+            onClick={() => verDetalle({
+              id_jugador: a.jugador_id || a.id_jugador, 
+              jugador: a.jugador_nombre,
+              nombre_equipo: a.jugador_equipo_original,
+              staff: a.staff_nombre,
+              fecha: a.fecha,
+              hora: a.hora,
+              latitud: a.latitud,
+              longitud: a.longitud
+            })}
+            className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
+          >
+            <td className="p-5">
+              <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
+              <p className="text-[10px] text-gray-500 uppercase font-medium">
+                J{a.jornada} - {a.equipo_local} <span className="text-green-500 font-bold">vs</span> {a.equipo_visitante}
+              </p>
+            </td>
+            <td className="p-5 text-gray-400 text-xs font-bold uppercase italic">
+              {a.staff_nombre}
+            </td>
+            <td className="p-5 text-xs">
+              <p className="text-white font-mono">{a.hora}</p>
+              <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
+            </td>
+            <td className="p-5 text-center">
+              <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    
+    {historialCompleto.length === 0 && (
+      <div className="p-10 text-center text-gray-500 italic">
+        No hay coincidencias en el historial de pases...
+      </div>
+    )}
+  </div>
+)}
+
               {/* SECCIÓN DE MAPA ORIGINAL */}
               <div className="pt-4 border-t border-gray-700">
                 {asistenciaSeleccionada.latitud ? (
