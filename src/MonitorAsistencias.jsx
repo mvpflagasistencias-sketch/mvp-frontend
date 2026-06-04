@@ -414,12 +414,10 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* ================= MODAL DETALLE DE PERFIL DE ATLETA ================= */}
       {isModalOpen && asistenciaSeleccionada && (
-        // MODIFICACIÓN EXCLUSIVA: Al hacer clic en este fondo negro flotante, se cierra el modal
         <div 
           onClick={() => setIsModalOpen(false)} 
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-          {/* PreventPropagation evita que el modal se cierre si le picas adentro al panel de contenido */}
           <div 
             onClick={(e) => e.stopPropagation()} 
             className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300"
@@ -451,7 +449,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA */}
+              {/* SECCIÓN HISTÓRICA ACUMULADA CON BOTÓN DE MAPA INDIVIDUAL POR REGISTRO */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
@@ -478,15 +476,37 @@ const MonitorAsistencias = ({ onBack }) => {
                         <p className="text-white font-extrabold text-xs uppercase tracking-tight truncate">
                           {ac.equipo_local} <span className="text-green-500 font-medium text-[10px]">vs</span> {ac.equipo_visitante}
                         </p>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase italic truncate">
+                          📡 monitor: {ac.staff_nombre || 'Monitor'}
+                        </p>
                       </div>
 
-                      <div className="text-right flex flex-col items-end justify-center gap-1 shrink-0">
-                        <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
-                          {ac.hora}
-                        </span>
-                        <p className="text-gray-500 font-mono text-[9px] font-semibold">
-                          {formatearFechaLimpia(ac.fecha)}
-                        </p>
+                      {/* Tiempos + Botón de Auditoría GPS individual */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right flex flex-col items-end justify-center gap-0.5">
+                          <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
+                            {ac.hora}
+                          </span>
+                          <p className="text-gray-500 font-mono text-[9px] font-semibold">
+                            {formatearFechaLimpia(ac.fecha)}
+                          </p>
+                        </div>
+
+                        {ac.latitud ? (
+                          <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${ac.latitud},${ac.longitud || ac.latitud}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2.5 rounded-xl border border-blue-500/30 transition-all shadow-md active:scale-95 text-xs"
+                            title="Ver ubicación exacta de este escaneo"
+                          >
+                            📍
+                          </a>
+                        ) : (
+                          <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none">
+                            ❌
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -497,32 +517,6 @@ const MonitorAsistencias = ({ onBack }) => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* SECCIÓN DE MAPA ORIGINAL */}
-              <div className="pt-4 border-t border-gray-700">
-                {asistenciaSeleccionada.latitud ? (
-                  <div className="space-y-4">
-                    <p className="text-green-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                      <span className="animate-ping w-2 h-2 rounded-full bg-green-500"></span>
-                      Ubicación de escaneo detectada
-                    </p>
-                    <a  
-                      href={`https://maps.google.com/?q=${asistenciaSeleccionada.latitud},${asistenciaSeleccionada.longitud}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full bg-blue-600 hover:bg-blue-500 text-white text-center py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-blue-900/40"
-                    >
-                      📍 Ver en Google Maps
-                    </a>
-                  </div>
-                ) : (
-                  <div className="bg-[#0f172a] p-4 rounded-2xl border border-dashed border-gray-700 text-center">
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-widest italic">
-                      Sin datos de GPS disponibles
-                    </p>
-                  </div>
-                )}
               </div>
 
               <button  
@@ -538,13 +532,12 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* ================= MODAL EXCLUSIVO: VISOR INLINE DE FOTO ================= */}
       {fotoModalUrl && (
-        // MODIFICACIÓN EXCLUSIVA: Al hacer clic en este fondo negro flotante, se cierra el visor
-        <div 
-          onClick={() => setFotoModalUrl(null)} 
+        <div  
+          onClick={() => setFotoModalUrl(null)}  
           className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
         >
-          <div 
-            onClick={(e) => e.stopPropagation()} 
+          <div  
+            onClick={(e) => e.stopPropagation()}  
             className="relative bg-[#1e293b] w-full max-w-3xl rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
           >
             <div className="bg-[#0f172a] p-5 flex justify-between items-center border-b border-gray-800">
