@@ -76,7 +76,7 @@ const MonitorAsistencias = ({ onBack }) => {
     return () => clearInterval(intervalo);
   }, [activeTab, filtroJornada, filtroCategoria, filtroTexto]);
 
-  // Hook secundario para el historial acumulado (Conectado al id_jugador unificado de Railway)
+  // Hook secundario para el historial acumulado
   useEffect(() => {
     const consultarAcumuladas = async () => {
       if (isModalOpen && asistenciaSeleccionada?.id_jugador) {
@@ -93,7 +93,19 @@ const MonitorAsistencias = ({ onBack }) => {
     consultarAcumuladas();
   }, [isModalOpen, asistenciaSeleccionada]);
 
-  // ABRIR MODAL CORREGIDO (UNIFICA ID JUGADOR PARA AMBAS PESTAÑAS)
+  // MODIFICACIÓN EXCLUSIVA: Escucha global para cerrar cualquier modal abierto con la tecla ESC
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+        setFotoModalUrl(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // ABRIR MODAL ORIGINAL (UNIFICA ID JUGADOR PARA AMBAS PESTAÑAS)
   const verDetalle = (asistencia) => {
     const idRealAtleta = asistencia.id_jugador || asistencia.jugador_id;
     setAsistenciaSeleccionada({
@@ -203,7 +215,7 @@ const MonitorAsistencias = ({ onBack }) => {
       {/* ================= PESTAÑA 1: POR PARTIDOS ================= */}
       {activeTab === 'partidos' && (
         <div className="grid grid-cols-1 gap-4">
-          {partidosAgrupados.map((p, idx) => {
+          {partidosAgrupados.map((p) => {
             const matchKey = `${p.jornada}-${p.categoria}-${p.equipo_local}-${p.equipo_visitante}`;
             const isSelected = partidoExpandido === matchKey;
 
@@ -402,8 +414,16 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* ================= MODAL DETALLE DE PERFIL DE ATLETA ================= */}
       {isModalOpen && asistenciaSeleccionada && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+        // MODIFICACIÓN EXCLUSIVA: Al hacer clic en este fondo negro flotante, se cierra el modal
+        <div 
+          onClick={() => setIsModalOpen(false)} 
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          {/* PreventPropagation evita que el modal se cierre si le picas adentro al panel de contenido */}
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300"
+          >
             <div className="bg-gradient-to-r from-[#0f172a] to-green-900 p-8 text-left">
               <p className="text-green-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Tarjeta de Perfil de Atleta</p>
               <h2 className="text-3xl font-black text-white uppercase italic leading-none tracking-tighter">
@@ -431,7 +451,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA (FLEXBOX LIMPIO CON SCROLL) */}
+              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
@@ -518,8 +538,15 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* ================= MODAL EXCLUSIVO: VISOR INLINE DE FOTO ================= */}
       {fotoModalUrl && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="relative bg-[#1e293b] w-full max-w-3xl rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        // MODIFICACIÓN EXCLUSIVA: Al hacer clic en este fondo negro flotante, se cierra el visor
+        <div 
+          onClick={() => setFotoModalUrl(null)} 
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="relative bg-[#1e293b] w-full max-w-3xl rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+          >
             <div className="bg-[#0f172a] p-5 flex justify-between items-center border-b border-gray-800">
               <div>
                 <p className="text-green-400 text-[9px] font-black uppercase tracking-widest italic">Visor de Evidencia Real</p>
