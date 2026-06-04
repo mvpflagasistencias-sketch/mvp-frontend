@@ -36,6 +36,18 @@ const GestionJugadores = ({ alRegistro }) => {
 
   useEffect(() => { cargarDatos(); }, []);
 
+  // ESCUCHA EXCLUSIVA: Cerrar modales activos con la tecla ESC
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsEditModalOpen(false);
+        setIsViewModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const jugadoresFiltrados = jugadores.filter((j) => {
     const termino = busqueda.toLowerCase();
     return (
@@ -89,7 +101,7 @@ const GestionJugadores = ({ alRegistro }) => {
         <div className="bg-[#0f172a] p-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left w-full md:w-auto">
             <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bitácora Digital de Atletas</h3>
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Gestión de Credenciales QR</p>
+            <p className="text-gray-500 text- text-xs font-bold uppercase tracking-widest">Gestión de Credenciales QR</p>
           </div>
 
           <div className="relative w-full md:w-80">
@@ -169,9 +181,16 @@ const GestionJugadores = ({ alRegistro }) => {
         </div>
       </div>
 
+      {/* ================= MODAL: EDITAR INFORMACIÓN ================= */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1e293b] w-full max-w-md rounded-3xl border border-gray-700 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+        <div 
+          onClick={() => setIsEditModalOpen(false)} 
+          className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="bg-[#1e293b] w-full max-w-md rounded-3xl border border-gray-700 shadow-2xl overflow-hidden animate-in zoom-in duration-300"
+          >
             <div className="bg-[#0f172a] p-6 border-b border-gray-700">
               <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Editar Información</h3>
             </div>
@@ -220,9 +239,16 @@ const GestionJugadores = ({ alRegistro }) => {
         </div>
       )}
 
+      {/* ================= MODAL: LICENCIA / CREDENCIAL DIGITAL QR ================= */}
       {isViewModalOpen && jugadorSeleccionado && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1e293b] w-full max-w-2xl rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div 
+          onClick={() => setIsViewModalOpen(false)} 
+          className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50 p-4"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="bg-[#1e293b] w-full max-w-2xl rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300"
+          >
             <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-10 text-left relative">
               <span className="bg-blue-500 text-[10px] px-2 py-1 rounded font-black uppercase tracking-widest text-white">Atleta Verificado</span>
               <h2 className="text-4xl font-black text-white uppercase mt-2 tracking-tighter italic leading-none">
@@ -243,6 +269,7 @@ const GestionJugadores = ({ alRegistro }) => {
                       src: logoMvp,
                       height: 45,
                       width: 45,
+                      align: 'center',
                       excavate: true,
                     }}
                   />
@@ -273,7 +300,6 @@ const GestionJugadores = ({ alRegistro }) => {
                         <p className="text-white font-mono">{jugadorSeleccionado.telefono}</p>
                       </div>
                     </div>
-                    {/* Tutor agregado en el perfil detallado */}
                     {jugadorSeleccionado.tutor && jugadorSeleccionado.tutor.trim() !== "" && (
                       <div className="flex items-center gap-4">
                         <div className="bg-purple-500/10 p-3 rounded-xl text-purple-400">👤</div>
@@ -289,7 +315,7 @@ const GestionJugadores = ({ alRegistro }) => {
             </div>
 
             <div className="bg-[#0f172a]/50 p-8 flex gap-4">
-              <button onClick={() => setIsViewModalOpen(false)} className="flex-1 bg-gray-800 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-700 transition-all text-white">Cerrar</button>
+              <button onClick={() => setIsViewModalOpen(false)} className="flex-1 bg-gray-800 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-700 transition-all">Cerrar</button>
               <button onClick={() => window.print()} className="flex-1 bg-cyan-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-cyan-500 transition-all shadow-lg shadow-cyan-900/30">Imprimir Credencial</button>
             </div>
           </div>
