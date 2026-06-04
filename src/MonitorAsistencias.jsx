@@ -449,7 +449,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN HISTÓRICA ACUMULADA CON BOTÓN DE MAPA INDIVIDUAL POR REGISTRO */}
+              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA CON AUDITORÍA GPS POR REGISTRO */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
@@ -481,32 +481,33 @@ const MonitorAsistencias = ({ onBack }) => {
                         </p>
                       </div>
 
-                      {/* Tiempos + Botón de Auditoría GPS individual */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right flex flex-col items-end justify-center gap-0.5">
-                          <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
-                            {ac.hora}
-                          </span>
-                          <p className="text-gray-500 font-mono text-[9px] font-semibold">
-                            {formatearFechaLimpia(ac.fecha)}
-                          </p>
-                        </div>
+                      <div className="text-right flex flex-col items-end justify-center gap-1 shrink-0">
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right flex flex-col items-end justify-center gap-0.5">
+                            <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
+                              {ac.hora}
+                            </span>
+                            <p className="text-gray-500 font-mono text-[9px] font-semibold">
+                              {formatearFechaLimpia(ac.fecha)}
+                            </p>
+                          </div>
 
-                        {ac.latitud ? (
-                          <a 
-                            href={`https://www.google.com/maps/search/?api=1&query=${ac.latitud},${ac.longitud || ac.latitud}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2.5 rounded-xl border border-blue-500/30 transition-all shadow-md active:scale-95 text-xs"
-                            title="Ver ubicación exacta de este escaneo"
-                          >
-                            📍
-                          </a>
-                        ) : (
-                          <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none">
-                            ❌
-                          </span>
-                        )}
+                          {ac.latitud ? (
+                            <a 
+                              href={`https://www.google.com/maps/search/?api=1&query=${ac.latitud},${ac.longitud}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2.5 rounded-xl border border-blue-500/30 transition-all shadow-md active:scale-95 text-xs"
+                              title="Ver ubicación exacta de este escaneo"
+                            >
+                              📍
+                            </a>
+                          ) : (
+                            <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none">
+                              ❌
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
