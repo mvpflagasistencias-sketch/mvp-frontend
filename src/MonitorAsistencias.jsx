@@ -460,6 +460,7 @@ const MonitorAsistencias = ({ onBack }) => {
 
                 <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-2xl custom-scrollbar">
                   {acumuladasJugador.map((ac, acIdx) => (
+                    console.log("Datos del registro acumulado:", ac),
                     <div 
                       key={ac.id_asistencia || acIdx} 
                       className="bg-[#0f172a]/70 border border-gray-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-gray-700 transition-all shadow-inner"
