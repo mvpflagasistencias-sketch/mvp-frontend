@@ -93,7 +93,7 @@ const MonitorAsistencias = ({ onBack }) => {
     consultarAcumuladas();
   }, [isModalOpen, asistenciaSeleccionada]);
 
-  // MODIFICACIÓN EXCLUSIVA: Escucha global para cerrar cualquier modal abierto con la tecla ESC
+  // Escucha global para cerrar cualquier modal abierto con la tecla ESC
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -105,7 +105,7 @@ const MonitorAsistencias = ({ onBack }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // ABRIR MODAL ORIGINAL (UNIFICA ID JUGADOR PARA AMBAS PESTAÑAS)
+  // ABRIR MODAL ORIGINAL
   const verDetalle = (asistencia) => {
     const idRealAtleta = asistencia.id_jugador || asistencia.jugador_id;
     setAsistenciaSeleccionada({
@@ -449,7 +449,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN HISTÓRICA ACUMULADA CON BOTÓN DE MAPA INDIVIDUAL POR REGISTRO */}
+              {/* SECCIÓN HISTÓRICA ACUMULADA - RECOPLADO CON MAPEADOS DE CONTROL LAT/LNG ORIGINALES */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
@@ -481,7 +481,7 @@ const MonitorAsistencias = ({ onBack }) => {
                         </p>
                       </div>
 
-                      {/* Tiempos + Botón de Auditoría GPS individual */}
+                      {/* Tiempos + Botón de Auditoría GPS individual (Solución al bug de África) */}
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right flex flex-col items-end justify-center gap-0.5">
                           <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
@@ -492,9 +492,9 @@ const MonitorAsistencias = ({ onBack }) => {
                           </p>
                         </div>
 
-                        {ac.latitud ? (
+                        {ac.latitud && ac.longitud ? (
                           <a 
-                            href={`https://www.google.com/maps/search/?api=1&query=${ac.latitud},${ac.longitud || ac.latitud}`}
+                            href={`https://www.google.com/maps/place/${ac.latitud},${ac.longitud}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2.5 rounded-xl border border-blue-500/30 transition-all shadow-md active:scale-95 text-xs"
@@ -503,7 +503,7 @@ const MonitorAsistencias = ({ onBack }) => {
                             📍
                           </a>
                         ) : (
-                          <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none">
+                          <span className="bg-gray-800/40 text-gray-600 p-2.5 rounded-xl border border-gray-800/80 text-[11px] cursor-not-allowed select-none" title="Sin coordenadas registradas">
                             ❌
                           </span>
                         )}
