@@ -10,6 +10,9 @@ const MonitorAsistencias = ({ onBack }) => {
   const [historialCompleto, setHistorialCompleto] = useState([]);
   const [asistenciasRecientes, setAsistenciasRecientes] = useState([]);
 
+  // NUEVO: Estado para guardar el historial completo acumulado del jugador seleccionado
+  const [acumuladasJugador, setAcumuladasJugador] = useState([]);
+
   // ESTADOS DE FILTROS
   const [filtroTexto, setFiltroTexto] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
@@ -17,7 +20,7 @@ const MonitorAsistencias = ({ onBack }) => {
 
   // ESTADO DE SELECCIÓN PARA EXPANDIR UN PARTIDO
   const [partidoExpandido, setPartidoExpandido] = useState(null);
-  
+    
   // CONTROL DEL MODAL DETALLADO ORIGINAL
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,6 +79,23 @@ const MonitorAsistencias = ({ onBack }) => {
     return () => clearInterval(intervalo);
   }, [activeTab, filtroJornada, filtroCategoria, filtroTexto]);
 
+  // NUEVO: Hook secundario que jala el historial acumulado en cuanto se abre el modal del jugador
+  useEffect(() => {
+    const consultarAcumuladas = async () => {
+      if (isModalOpen && asistenciaSeleccionada?.id_jugador) {
+        try {
+          const res = await api.get(`/api/jugadores/${asistenciaSeleccionada.id_jugador}/asistencias-acumuladas`);
+          setAcumuladasJugador(res.data || []);
+        } catch (err) {
+          console.error("Error al cargar acumuladas del atleta:", err);
+        }
+      } else {
+        setAcumuladasJugador([]); // Reseteamos al cerrar
+      }
+    };
+    consultarAcumuladas();
+  }, [isModalOpen, asistenciaSeleccionada]);
+
   // ABRIR MODAL ORIGINAL
   const verDetalle = (asistencia) => {
     setAsistenciaSeleccionada(asistencia);
@@ -104,19 +124,19 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* SYSTEM TABS: Selector de barra superior */}
       <div className="flex border-b border-gray-800 gap-2 pt-2">
-        <button 
+        <button  
           onClick={() => { setActiveTab('partidos'); setPartidoExpandido(null); }}
           className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'partidos' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
         >
           🏈 Por Partidos
         </button>
-        <button 
+        <button  
           onClick={() => setActiveTab('historial')}
           className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'historial' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
         >
           📋 Historial General
         </button>
-        <button 
+        <button  
           onClick={() => setActiveTab('metricas')}
           className={`pb-4 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeTab === 'metricas' ? 'text-green-400 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
         >
@@ -131,8 +151,8 @@ const MonitorAsistencias = ({ onBack }) => {
         {(activeTab === 'partidos' || activeTab === 'historial') && (
           <div>
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Jornada</label>
-            <select 
-              value={filtroJornada} 
+            <select  
+              value={filtroJornada}  
               onChange={(e) => { setFiltroJornada(e.target.value); setPartidoExpandido(null); }}
               className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white text-xs font-bold outline-none focus:border-green-500 transition-all uppercase"
             >
@@ -148,8 +168,8 @@ const MonitorAsistencias = ({ onBack }) => {
         {activeTab === 'partidos' && (
           <div>
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Categoría</label>
-            <select 
-              value={filtroCategoria} 
+            <select  
+              value={filtroCategoria}  
               onChange={(e) => { setFiltroCategoria(e.target.value); setPartidoExpandido(null); }}
               className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white text-xs font-bold outline-none focus:border-green-500 transition-all"
             >
@@ -166,7 +186,7 @@ const MonitorAsistencias = ({ onBack }) => {
         {activeTab === 'historial' && (
           <div className="md:col-span-2">
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Búsqueda rápida</label>
-            <input 
+            <input  
               type="text"
               placeholder="🔎 BUSCAR POR ATLETA O EQUIPO..."
               className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-green-400 text-xs font-bold outline-none focus:border-green-500 transition-all placeholder:text-gray-700 uppercase"
@@ -191,12 +211,12 @@ const MonitorAsistencias = ({ onBack }) => {
             const isSelected = partidoExpandido === matchKey;
 
             return (
-              <div 
-                key={idx} 
+              <div  
+                key={idx}  
                 className={`bg-[#1e293b] rounded-3xl border transition-all overflow-hidden shadow-xl ${isSelected ? 'border-green-500 ring-1 ring-green-500/30' : 'border-gray-800 hover:border-gray-700'}`}
               >
                 {/* Cabecera del Partido */}
-                <div 
+                <div  
                   onClick={() => setPartidoExpandido(isSelected ? null : matchKey)}
                   className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer select-none bg-[#131b2e]/60"
                 >
@@ -235,8 +255,7 @@ const MonitorAsistencias = ({ onBack }) => {
                           <p className="text-green-400 text-xs font-black uppercase tracking-wider">📸 Evidencia Fotográfica Colectiva</p>
                           <p className="text-gray-500 text-[10px] uppercase">Planilla firmada registrada por el oficial de campo</p>
                         </div>
-                        {/* MODIFICACIÓN: Cambiamos la etiqueta 'a' por un 'button' que activa nuestro modal en el mismo lugar */}
-                        <button 
+                        <button  
                           onClick={() => setFotoModalUrl(p.foto_partido)}
                           className="bg-green-600 text-white text-[10px] px-5 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-green-500 transition-all shadow-lg shadow-green-900/20"
                         >
@@ -257,9 +276,10 @@ const MonitorAsistencias = ({ onBack }) => {
                         </thead>
                         <tbody className="divide-y divide-gray-800/60 text-xs">
                           {p.jugadores.map((j, subIdx) => (
-                            <tr 
+                            <tr  
                               key={subIdx}
                               onClick={() => verDetalle({
+                                id_jugador: j.id_jugador, // Enviamos el ID para el sub-fetching de acumuladas
                                 jugador: j.jugador_nombre,
                                 nombre_equipo: j.equipo_nombre,
                                 staff: j.staff_nombre,
@@ -311,9 +331,10 @@ const MonitorAsistencias = ({ onBack }) => {
             </thead>
             <tbody className="divide-y divide-gray-800">
               {historialCompleto.map((a) => (
-                <tr 
-                  key={a.id_asistencia} 
+                <tr  
+                  key={a.id_asistencia}  
                   onClick={() => verDetalle({
+                    id_jugador: a.id_jugador, // Enviamos el ID para el sub-fetching de acumuladas
                     jugador: a.jugador_nombre,
                     nombre_equipo: a.jugador_equipo_original,
                     staff: a.staff_nombre,
@@ -388,18 +409,18 @@ const MonitorAsistencias = ({ onBack }) => {
         </div>
       )}
 
-      {/* ================= MODAL DE DETALLE ORIGINAL SIN ALTERACIONES ================= */}
+      {/* ================= MODAL DE DETALLE ORIGINAL - AHORA CON EL PANEL ACUMULADO DEL ATLETA ================= */}
       {isModalOpen && asistenciaSeleccionada && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
             <div className="bg-gradient-to-r from-[#0f172a] to-green-900 p-8 text-left">
-              <p className="text-green-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Detalle de Registro</p>
+              <p className="text-green-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Tarjeta de Perfil de Atleta</p>
               <h2 className="text-3xl font-black text-white uppercase italic leading-none tracking-tighter">
                 {asistenciaSeleccionada.jugador}
               </h2>
             </div>
 
-            <div className="p-8 space-y-6 text-left">
+            <div className="p-8 space-y-6 text-left max-h-[75vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Equipo</p>
@@ -419,6 +440,37 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
+              {/* SECCIÓN NUEVA: BITÁCORA HISTÓRICA ACUMULADA DEL JUGADOR */}
+              <div className="pt-4 border-t border-gray-800 space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
+                  <span className="bg-green-950 text-green-400 text-[9px] border border-green-800 px-2 py-0.5 rounded font-black font-mono">
+                    {acumuladasJugador.length} ASISTENCIAS
+                  </span>
+                </div>
+
+                <div className="bg-[#0f172a]/60 border border-gray-800 rounded-2xl overflow-hidden max-h-40 overflow-y-auto divide-y divide-gray-800/40">
+                  {acumuladasJugador.map((ac, aIdx) => (
+                    <div key={aIdx} className="p-3 flex justify-between items-center text-xs hover:bg-[#141b2e]/50 transition-all">
+                      <div>
+                        <p className="text-white font-bold uppercase">Jornada {ac.jornada} - <span className="text-gray-400 text-[10px] italic">{ac.categoria}</span></p>
+                        <p className="text-[10px] text-gray-500 font-medium uppercase">{ac.equipo_local} vs {ac.equipo_visitante}</p>
+                      </div>
+                      <div className="text-right font-mono text-[10px]">
+                        <p className="text-white">{formatearFechaLimpia(ac.fecha)}</p>
+                        <p className="text-gray-500">{ac.hora}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {acumuladasJugador.length === 0 && (
+                    <div className="p-4 text-center text-gray-600 text-xs italic uppercase font-bold">
+                      Cargando récord histórico de pases...
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* SECCIÓN DE MAPA ORIGINAL */}
               <div className="pt-4 border-t border-gray-700">
                 {asistenciaSeleccionada.latitud ? (
@@ -427,7 +479,7 @@ const MonitorAsistencias = ({ onBack }) => {
                       <span className="animate-ping w-2 h-2 rounded-full bg-green-500"></span>
                       Ubicación de escaneo detectada
                     </p>
-                    <a 
+                    <a  
                       href={`https://www.google.com/maps?q=${asistenciaSeleccionada.latitud},${asistenciaSeleccionada.longitud}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -445,11 +497,11 @@ const MonitorAsistencias = ({ onBack }) => {
                 )}
               </div>
 
-              <button 
+              <button  
                 onClick={() => setIsModalOpen(false)}
                 className="w-full bg-gray-800 text-gray-400 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-700 hover:text-white transition-all"
               >
-                Cerrar Detalle
+                Cerrar Perfil
               </button>
             </div>
           </div>
@@ -467,7 +519,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 <p className="text-green-400 text-[9px] font-black uppercase tracking-widest italic">Visor de Evidencia Real</p>
                 <h3 className="text-lg font-black text-white uppercase tracking-tight">Planilla del Encuentro</h3>
               </div>
-              <button 
+              <button  
                 onClick={() => setFotoModalUrl(null)}
                 className="text-gray-500 hover:text-white text-xs font-black uppercase tracking-wider bg-gray-900 px-3 py-2 rounded-xl border border-gray-800 transition-all"
               >
@@ -477,16 +529,16 @@ const MonitorAsistencias = ({ onBack }) => {
 
             {/* Contenedor de la Imagen Base64 Expandida */}
             <div className="p-6 bg-[#0f172a]/40 flex items-center justify-center max-h-[70vh] overflow-y-auto">
-              <img 
-                src={fotoModalUrl} 
-                alt="Planilla Evidencia Roster" 
+              <img  
+                src={fotoModalUrl}  
+                alt="Planilla Evidencia Roster"  
                 className="w-full h-auto max-h-[65vh] object-contain rounded-xl border border-gray-800 shadow-inner"
               />
             </div>
 
             {/* Pie del modal */}
             <div className="bg-[#0f172a] p-4 text-center border-t border-gray-800">
-              <button 
+              <button  
                 onClick={() => setFotoModalUrl(null)}
                 className="bg-gray-800 text-gray-400 text-xs font-black uppercase tracking-widest py-3 px-8 rounded-xl hover:bg-gray-700 hover:text-white transition-all w-full sm:w-auto"
               >
