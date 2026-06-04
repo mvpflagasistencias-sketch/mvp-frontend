@@ -10,7 +10,7 @@ const MonitorAsistencias = ({ onBack }) => {
   const [historialCompleto, setHistorialCompleto] = useState([]);
   const [asistenciasRecientes, setAsistenciasRecientes] = useState([]);
 
-  // NUEVO: Estado para guardar el historial completo acumulado del jugador seleccionado
+  // Historial completo acumulado del jugador seleccionado
   const [acumuladasJugador, setAcumuladasJugador] = useState([]);
 
   // ESTADOS DE FILTROS
@@ -25,7 +25,7 @@ const MonitorAsistencias = ({ onBack }) => {
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // NUEVO: Estado exclusivo para controlar el Modal de la Foto sin abrir otra página
+  // Modal de la Foto sin abrir otra página
   const [fotoModalUrl, setFotoModalUrl] = useState(null);
 
   // FUNCIÓN DE FORMATEO EXCLUSIVA ORIGINAL
@@ -43,7 +43,6 @@ const MonitorAsistencias = ({ onBack }) => {
   const cargarDatosSincronizados = async () => {
     try {
       if (activeTab === 'partidos') {
-        // Petición al endpoint 1 con queries dynamic
         let url = '/api/asistencias/agrupadas';
         const params = [];
         if (filtroJornada) params.push(`jornada=${filtroJornada}`);
@@ -53,7 +52,6 @@ const MonitorAsistencias = ({ onBack }) => {
         const res = await api.get(url);
         setPartidosAgrupados(res.data);
       } else if (activeTab === 'historial') {
-        // Petición al endpoint 2 con filtros dinámicos
         let url = '/api/asistencias/historial';
         const params = [];
         if (filtroJornada) params.push(`jornada=${filtroJornada}`);
@@ -63,7 +61,6 @@ const MonitorAsistencias = ({ onBack }) => {
         const res = await api.get(url);
         setHistorialCompleto(res.data);
       } else if (activeTab === 'metricas') {
-        // Alimentamos métricas jalando el universo completo del historial
         const res = await api.get('/api/asistencias/historial');
         setAsistenciasRecientes(res.data);
       }
@@ -79,7 +76,7 @@ const MonitorAsistencias = ({ onBack }) => {
     return () => clearInterval(intervalo);
   }, [activeTab, filtroJornada, filtroCategoria, filtroTexto]);
 
-  // NUEVO: Hook secundario que jala el historial acumulado en cuanto se abre el modal del jugador
+  // Hook secundario para el historial acumulado (Conectado al id_jugador unificado de Railway)
   useEffect(() => {
     const consultarAcumuladas = async () => {
       if (isModalOpen && asistenciaSeleccionada?.id_jugador) {
@@ -90,7 +87,7 @@ const MonitorAsistencias = ({ onBack }) => {
           console.error("Error al cargar acumuladas del atleta:", err);
         }
       } else {
-        setAcumuladasJugador([]); // Reseteamos al cerrar
+        setAcumuladasJugador([]);
       }
     };
     consultarAcumuladas();
@@ -106,7 +103,7 @@ const MonitorAsistencias = ({ onBack }) => {
   const totalPasesRegistrados = asistenciasRecientes.length;
   const pasesConGps = asistenciasRecientes.filter(a => a.latitud).length;
   const jornadasUnicas = [...new Set(asistenciasRecientes.map(a => a.jornada).filter(Boolean))].sort((a,b)=>a-b);
-  const categoriasUnicas = [...new Set(asistenciasRecientes.map(a => a.categoria).filter(Boolean))];
+  const categoriesUnicas = [...new Set(asistenciasRecientes.map(a => a.categoria).filter(Boolean))];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left relative">
@@ -122,7 +119,7 @@ const MonitorAsistencias = ({ onBack }) => {
         </button>
       </div>
 
-      {/* SYSTEM TABS: Selector de barra superior */}
+      {/* SYSTEM TABS */}
       <div className="flex border-b border-gray-800 gap-2 pt-2">
         <button  
           onClick={() => { setActiveTab('partidos'); setPartidoExpandido(null); }}
@@ -146,8 +143,6 @@ const MonitorAsistencias = ({ onBack }) => {
 
       {/* --- PANEL DE FILTROS DINÁMICOS ADAPTABLES --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800">
-        
-        {/* Filtro por Jornada (Disponible en Partidos e Historial) */}
         {(activeTab === 'partidos' || activeTab === 'historial') && (
           <div>
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Jornada</label>
@@ -164,7 +159,6 @@ const MonitorAsistencias = ({ onBack }) => {
           </div>
         )}
 
-        {/* Filtro por Categoría (Exclusivo de Pestaña Partidos) */}
         {activeTab === 'partidos' && (
           <div>
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Filtrar Categoría</label>
@@ -182,7 +176,6 @@ const MonitorAsistencias = ({ onBack }) => {
           </div>
         )}
 
-        {/* Buscador de Texto (Exclusivo de Historial General) */}
         {activeTab === 'historial' && (
           <div className="md:col-span-2">
             <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Búsqueda rápida</label>
@@ -198,7 +191,7 @@ const MonitorAsistencias = ({ onBack }) => {
 
         {activeTab === 'metricas' && (
           <div className="col-span-3 py-2 text-center text-gray-400 text-xs font-bold uppercase tracking-wider italic">
-            📈 Resumen Estadístico de Operaciones en Campo
+            📈 Resumen Estadístico de Operations en Campo
           </div>
         )}
       </div>
@@ -212,10 +205,9 @@ const MonitorAsistencias = ({ onBack }) => {
 
             return (
               <div  
-                key={idx}  
+                key={matchKey}  
                 className={`bg-[#1e293b] rounded-3xl border transition-all overflow-hidden shadow-xl ${isSelected ? 'border-green-500 ring-1 ring-green-500/30' : 'border-gray-800 hover:border-gray-700'}`}
               >
-                {/* Cabecera del Partido */}
                 <div  
                   onClick={() => setPartidoExpandido(isSelected ? null : matchKey)}
                   className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer select-none bg-[#131b2e]/60"
@@ -244,11 +236,9 @@ const MonitorAsistencias = ({ onBack }) => {
                   </div>
                 </div>
 
-                {/* Sub-Tabla Desplegable de Jugadores del Partido */}
+                {/* Sub-Tabla Desplegable de Jugadores */}
                 {isSelected && (
                   <div className="border-t border-gray-800 bg-[#0f172a]/50 p-4 animate-in slide-in-from-top-4 duration-300">
-                    
-                    {/* Visualizador de la foto de bitácora real */}
                     {p.foto_partido && (
                       <div className="mb-4 p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
@@ -277,9 +267,9 @@ const MonitorAsistencias = ({ onBack }) => {
                         <tbody className="divide-y divide-gray-800/60 text-xs">
                           {p.jugadores.map((j, subIdx) => (
                             <tr  
-                              key={subIdx}
+                              key={j.id_jugador || subIdx}
                               onClick={() => verDetalle({
-                                id_jugador: j.id_jugador, // Enviamos el ID para el sub-fetching de acumuladas
+                                id_jugador: j.id_jugador,
                                 jugador: j.jugador_nombre,
                                 nombre_equipo: j.equipo_nombre,
                                 staff: j.staff_nombre,
@@ -334,7 +324,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 <tr  
                   key={a.id_asistencia}  
                   onClick={() => verDetalle({
-                    id_jugador: a.id_jugador, // Enviamos el ID para el sub-fetching de acumuladas
+                    id_jugador: a.id_jugador, // Vinculado correctamente con tu backend de Railway
                     jugador: a.jugador_nombre,
                     nombre_equipo: a.jugador_equipo_original,
                     staff: a.staff_nombre,
@@ -379,8 +369,6 @@ const MonitorAsistencias = ({ onBack }) => {
       {/* ================= PESTAÑA 3: MÉTRICAS Y REPORTES ================= */}
       {activeTab === 'metricas' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Tarjeta de Contadores Rápidos */}
           <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-800 space-y-4">
             <h3 className="text-white font-black uppercase tracking-tight text-lg">Resumen Operativo</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -395,12 +383,11 @@ const MonitorAsistencias = ({ onBack }) => {
             </div>
           </div>
 
-          {/* Tarjeta de Resumen de Torneo */}
           <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-800 space-y-3">
             <h3 className="text-white font-black uppercase tracking-tight text-lg">Alcance de la Liga</h3>
             <div className="space-y-2 text-xs text-gray-400 uppercase font-bold">
               <p>📌 Jornadas con Actividad Real: <span className="text-white font-mono">{jornadasUnicas.length === 0 ? 0 : jornadasUnicas.join(', ')}</span></p>
-              <p>🏆 Categorías en Operación Móvil: <span className="text-white font-mono">{categoriasUnicas.length === 0 ? 'Esperando...' : categoriasUnicas.join(', ')}</span></p>
+              <p>🏆 Categorías en Operación Móvil: <span className="text-white font-mono">{categoriesUnicas.length === 0 ? 'Esperando...' : categoriesUnicas.join(', ')}</span></p>
               <p>⚡ Tasa de Cobertura de Geolocalización: <span className="text-green-400 font-mono">
                 {totalPasesRegistrados > 0 ? `${((pasesConGps / totalPasesRegistrados) * 100).toFixed(1)}%` : '0%'}
               </span></p>
@@ -409,7 +396,7 @@ const MonitorAsistencias = ({ onBack }) => {
         </div>
       )}
 
-      {/* ================= MODAL DE DETALLE ORIGINAL - AHORA CON EL PANEL ACUMULADO DEL ATLETA ================= */}
+      {/* ================= MODAL DETALLE DE PERFIL DE ATLETA ================= */}
       {isModalOpen && asistenciaSeleccionada && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#1e293b] w-full max-w-lg rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
@@ -440,7 +427,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN NUEVA: BITÁCORA HISTÓRICA ACUMULADA DEL JUGADOR */}
+              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA (FLEXBOX LIMPIO CON SCROLL) */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
@@ -449,45 +436,12 @@ const MonitorAsistencias = ({ onBack }) => {
                   </span>
                 </div>
 
-                <div className="bg-[#0f172a]/60 border border-gray-800 rounded-2xl overflow-hidden max-h-40 overflow-y-auto divide-y divide-gray-800/40">
-                  {acumuladasJugador.map((ac, aIdx) => (
-                    <div key={aIdx} className="p-3 flex justify-between items-center text-xs hover:bg-[#141b2e]/50 transition-all">
-                      <div>
-                        <p className="text-white font-bold uppercase">Jornada {ac.jornada} - <span className="text-gray-400 text-[10px] italic">{ac.categoria}</span></p>
-                        <p className="text-[10px] text-gray-500 font-medium uppercase">{ac.equipo_local} vs {ac.equipo_visitante}</p>
-                      </div>
-                      <div className="text-right font-mono text-[10px]">
-                        <p className="text-white">{formatearFechaLimpia(ac.fecha)}</p>
-                        <p className="text-gray-500">{ac.hora}</p>
-                      </div>
-                    </div>
-                  ))}
-
-                  {acumuladasJugador.length === 0 && (
-                    <div className="p-4 text-center text-gray-600 text-xs italic uppercase font-bold">
-                      Cargando récord histórico de pases...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* SECCIÓN NUEVA Y CUADRADA: BITÁCORA HISTÓRICA ACUMULADA DEL JUGADOR */}
-              <div className="pt-4 border-t border-gray-800 space-y-3">
-                <div className="flex justify-between items-center">
-                  <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">📊 Historial de Torneo Acumulado</p>
-                  <span className="bg-green-950 text-green-400 text-[9px] border border-green-800 px-2 py-0.5 rounded font-black font-mono">
-                    {acumuladasJugador.length} ASISTENCIAS
-                  </span>
-                </div>
-
-                {/* Contenedor adaptativo con scroll vertical limpio */}
                 <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-2xl custom-scrollbar">
                   {acumuladasJugador.map((ac, acIdx) => (
                     <div 
-                      key={acIdx} 
+                      key={ac.id_asistencia || acIdx} 
                       className="bg-[#0f172a]/70 border border-gray-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-gray-700 transition-all shadow-inner"
                     >
-                      {/* Lado Izquierdo: Datos del Partido */}
                       <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="bg-blue-950 text-blue-400 text-[8px] font-black uppercase px-1.5 py-0.5 rounded border border-blue-900/40">
@@ -502,7 +456,6 @@ const MonitorAsistencias = ({ onBack }) => {
                         </p>
                       </div>
 
-                      {/* Lado Derecho: Tiempos y Auditoría */}
                       <div className="text-right flex flex-col items-end justify-center gap-1 shrink-0">
                         <span className="text-white font-mono text-[10px] font-bold bg-[#1e293b] px-2 py-0.5 rounded-md border border-gray-800">
                           {ac.hora}
@@ -516,11 +469,12 @@ const MonitorAsistencias = ({ onBack }) => {
 
                   {acumuladasJugador.length === 0 && (
                     <div className="bg-[#0f172a]/40 border border-dashed border-gray-800 p-8 text-center rounded-2xl text-gray-600 text-xs italic uppercase font-bold tracking-wider">
-                      Cargando récord histórico de pases...
+                      Sin récord histórico de pases para este torneo.
                     </div>
                   )}
                 </div>
               </div>
+
               {/* SECCIÓN DE MAPA ORIGINAL */}
               <div className="pt-4 border-t border-gray-700">
                 {asistenciaSeleccionada.latitud ? (
@@ -530,7 +484,7 @@ const MonitorAsistencias = ({ onBack }) => {
                       Ubicación de escaneo detectada
                     </p>
                     <a  
-                      href={`https://www.google.com/maps?q=${asistenciaSeleccionada.latitud},${asistenciaSeleccionada.longitud}`}
+                      href={`https://maps.google.com/?q=${asistenciaSeleccionada.latitud},${asistenciaSeleccionada.longitud}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block w-full bg-blue-600 hover:bg-blue-500 text-white text-center py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-blue-900/40"
@@ -558,12 +512,10 @@ const MonitorAsistencias = ({ onBack }) => {
         </div>
       )}
 
-      {/* ================= MODAL EXCLUSIVO: VISUALIZADOR INLINE DE LA FOTO DEL PARTIDO ================= */}
+      {/* ================= MODAL EXCLUSIVO: VISOR INLINE DE FOTO ================= */}
       {fotoModalUrl && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="relative bg-[#1e293b] w-full max-w-3xl rounded-3xl border border-green-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            
-            {/* Cabecera del visor */}
             <div className="bg-[#0f172a] p-5 flex justify-between items-center border-b border-gray-800">
               <div>
                 <p className="text-green-400 text-[9px] font-black uppercase tracking-widest italic">Visor de Evidencia Real</p>
@@ -577,7 +529,6 @@ const MonitorAsistencias = ({ onBack }) => {
               </button>
             </div>
 
-            {/* Contenedor de la Imagen Base64 Expandida */}
             <div className="p-6 bg-[#0f172a]/40 flex items-center justify-center max-h-[70vh] overflow-y-auto">
               <img  
                 src={fotoModalUrl}  
@@ -586,7 +537,6 @@ const MonitorAsistencias = ({ onBack }) => {
               />
             </div>
 
-            {/* Pie del modal */}
             <div className="bg-[#0f172a] p-4 text-center border-t border-gray-800">
               <button  
                 onClick={() => setFotoModalUrl(null)}
@@ -595,7 +545,6 @@ const MonitorAsistencias = ({ onBack }) => {
                 Volver al Monitor
               </button>
             </div>
-
           </div>
         </div>
       )}
