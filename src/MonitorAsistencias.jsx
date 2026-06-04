@@ -93,9 +93,13 @@ const MonitorAsistencias = ({ onBack }) => {
     consultarAcumuladas();
   }, [isModalOpen, asistenciaSeleccionada]);
 
-  // ABRIR MODAL ORIGINAL
+  // ABRIR MODAL CORREGIDO (UNIFICA ID JUGADOR PARA AMBAS PESTAÑAS)
   const verDetalle = (asistencia) => {
-    setAsistenciaSeleccionada(asistencia);
+    const idRealAtleta = asistencia.id_jugador || asistencia.jugador_id;
+    setAsistenciaSeleccionada({
+      ...asistencia,
+      id_jugador: idRealAtleta
+    });
     setIsModalOpen(true);
   };
 
@@ -324,7 +328,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 <tr  
                   key={a.id_asistencia}  
                   onClick={() => verDetalle({
-                    id_jugador: a.id_jugador, // Vinculado correctamente con tu backend de Railway
+                    id_jugador: a.id_jugador || a.jugador_id,
                     jugador: a.jugador_nombre,
                     nombre_equipo: a.jugador_equipo_original,
                     staff: a.staff_nombre,
