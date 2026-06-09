@@ -25,8 +25,9 @@ const MonitorAsistencias = ({ onBack }) => {
   const [asistenciaSeleccionada, setAsistenciaSeleccionada] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Modal de la Foto sin abrir otra página
+  // Modal de la Foto sin abrir otra página (Visor dinámico)
   const [fotoModalUrl, setFotoModalUrl] = useState(null);
+  const [fotoModalTitulo, setFotoModalTitulo] = useState('Planilla del Encuentro');
 
   // FUNCIÓN DE FORMATEO EXCLUSIVA ORIGINAL
   const formatearFechaLimpia = (fechaStr) => {
@@ -78,7 +79,7 @@ const MonitorAsistencias = ({ onBack }) => {
 
   // Hook secundario para el historial acumulado
   useEffect(() => {
-    const consultarAcumuladas = async () => {
+    const conducirAcumuladas = async () => {
       if (isModalOpen && asistenciaSeleccionada?.id_jugador) {
         try {
           const res = await api.get(`/api/jugadores/${asistenciaSeleccionada.id_jugador}/asistencias-acumuladas`);
@@ -90,7 +91,7 @@ const MonitorAsistencias = ({ onBack }) => {
         setAcumuladasJugador([]);
       }
     };
-    consultarAcumuladas();
+    conducirAcumuladas();
   }, [isModalOpen, asistenciaSeleccionada]);
 
   // MODIFICACIÓN EXCLUSIVA: Escucha global para cerrar cualquier modal abierto con la tecla ESC
@@ -113,6 +114,12 @@ const MonitorAsistencias = ({ onBack }) => {
       id_jugador: idRealAtleta
     });
     setIsModalOpen(true);
+  };
+
+  // ABRE VISOR INLINE ASIGNANDO TÍTULO AL BANDO
+  const abrirVisorEvidencia = (url, tituloCorto) => {
+    setFotoModalUrl(url);
+    setFotoModalTitulo(tituloCorto);
   };
 
   // CONTADORES MATEMÁTICOS PARA LA PESTAÑA DE MÉTRICAS (MERN)
@@ -243,11 +250,28 @@ const MonitorAsistencias = ({ onBack }) => {
                       <p className="text-[10px] text-gray-500 font-bold uppercase">Roster Asistente</p>
                       <p className="text-lg font-black text-white font-mono">{p.total_asistencias} <span className="text-xs text-green-400 font-bold">JUGS</span></p>
                     </div>
-                    {p.foto_partido && (
-                      <div className="w-12 h-12 bg-gray-900 border border-gray-700 rounded-xl overflow-hidden flex items-center justify-center">
-                        <img src={p.foto_partido} alt="Roster" className="w-full h-full object-cover" />
-                      </div>
-                    )}
+                    
+                    {/* EVOLUCIÓN COMPOSICIÓN WEB: Doble miniatura asimétrica en la vista previa de la fila */}
+                    <div className="flex gap-1.5 items-center bg-[#0f172a]/80 p-1.5 rounded-xl border border-gray-800">
+                      {p.foto_local_url ? (
+                        <div className="w-9 h-9 bg-gray-900 border border-blue-500/40 rounded-lg overflow-hidden flex items-center justify-center relative" title="Planilla Local">
+                          <img src={p.foto_local_url} alt="Local" className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-blue-900/90 text-[7px] text-center text-white font-black uppercase scale-75">L</span>
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 bg-gray-900/40 border border-dashed border-gray-800 rounded-lg flex items-center justify-center text-[8px] text-gray-700 font-bold">L</div>
+                      )}
+                      
+                      {p.foto_visitante_url ? (
+                        <div className="w-9 h-9 bg-gray-900 border border-red-500/40 rounded-lg overflow-hidden flex items-center justify-center relative" title="Planilla Visitante">
+                          <img src={p.foto_visitante_url} alt="Visitante" className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-red-900/90 text-[7px] text-center text-white font-black uppercase scale-75">V</span>
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 bg-gray-900/40 border border-dashed border-gray-800 rounded-lg flex items-center justify-center text-[8px] text-gray-700 font-bold">V</div>
+                      )}
+                    </div>
+
                     <span className="text-gray-500 font-bold text-sm">{isSelected ? '▲' : '▼'}</span>
                   </div>
                 </div>
@@ -255,18 +279,47 @@ const MonitorAsistencias = ({ onBack }) => {
                 {/* Sub-Tabla Desplegable de Jugadores */}
                 {isSelected && (
                   <div className="border-t border-gray-800 bg-[#0f172a]/50 p-4 animate-in slide-in-from-top-4 duration-300">
-                    {p.foto_partido && (
-                      <div className="mb-4 p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div>
-                          <p className="text-green-400 text-xs font-black uppercase tracking-wider">📸 Evidencia Fotográfica Colectiva</p>
-                          <p className="text-gray-500 text-[10px] uppercase">Planilla firmada registrada por el oficial de campo</p>
+                    
+                    {/* EVOLUCIÓN COMPOSICIÓN WEB: Despliegue en Grid de dos columnas para separar las planillas */}
+                    {(p.foto_local_url || p.foto_visitante_url) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        
+                        {/* CONTENEDOR PLANILLA LOCAL */}
+                        <div className="p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex items-center justify-between gap-4">
+                          <div>
+                            <p className="text-blue-400 text-xs font-black uppercase tracking-wider">📸 Planilla Roster Local</p>
+                            <p className="text-gray-500 text-[9px] uppercase truncate max-w-[180px] sm:max-w-xs">{p.equipo_local}</p>
+                          </div>
+                          {p.foto_local_url ? (
+                            <button  
+                              onClick={() => abrirVisorEvidencia(p.foto_local_url, `Planilla Local - ${p.equipo_local}`)}
+                              className="bg-blue-600 text-white text-[9px] px-4 py-2.5 rounded-xl font-black uppercase tracking-wider hover:bg-blue-500 transition-all shadow-lg"
+                            >
+                              👁️ Ver Local
+                            </button>
+                          ) : (
+                            <span className="text-gray-600 font-bold text-[10px] uppercase italic">Sin Captura</span>
+                          )}
                         </div>
-                        <button  
-                          onClick={() => setFotoModalUrl(p.foto_partido)}
-                          className="bg-green-600 text-white text-[10px] px-5 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-green-500 transition-all shadow-lg shadow-green-900/20"
-                        >
-                          👁️ Ver Imagen Completa
-                        </button>
+
+                        {/* CONTENEDOR PLANILLA VISITANTE */}
+                        <div className="p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex items-center justify-between gap-4">
+                          <div>
+                            <p className="text-red-400 text-xs font-black uppercase tracking-wider">📸 Planilla Roster Visitante</p>
+                            <p className="text-gray-500 text-[9px] uppercase truncate max-w-[180px] sm:max-w-xs">{p.equipo_visitante}</p>
+                          </div>
+                          {p.foto_visitante_url ? (
+                            <button  
+                              onClick={() => abrirVisorEvidencia(p.foto_visitante_url, `Planilla Visitante - ${p.equipo_visitante}`)}
+                              className="bg-red-600 text-white text-[9px] px-4 py-2.5 rounded-xl font-black uppercase tracking-wider hover:bg-red-500 transition-all shadow-lg"
+                            >
+                              👁️ Ver Visitante
+                            </button>
+                          ) : (
+                            <span className="text-gray-600 font-bold text-[10px] uppercase italic">Sin Captura</span>
+                          )}
+                        </div>
+
                       </div>
                     )}
 
@@ -279,7 +332,7 @@ const MonitorAsistencias = ({ onBack }) => {
                             <th className="p-4">Hora Check-in</th>
                             <th className="p-4 text-center">Estatus</th>
                           </tr>
-                        </thead>
+                         Glastonbury </thead>
                         <tbody className="divide-y divide-gray-800/60 text-xs">
                           {p.jugadores.map((j, subIdx) => (
                             <tr  
@@ -376,7 +429,7 @@ const MonitorAsistencias = ({ onBack }) => {
           
           {historialCompleto.length === 0 && (
             <div className="p-10 text-center text-gray-500 italic">
-              No hay coincidencias en el historial de pases...
+              No hayコインシデンcias en el historial de pases...
             </div>
           )}
         </div>
@@ -520,7 +573,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              <button  
+              <button 
                 onClick={() => setIsModalOpen(false)}
                 className="w-full bg-gray-800 text-gray-400 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-700 hover:text-white transition-all"
               >
@@ -531,7 +584,7 @@ const MonitorAsistencias = ({ onBack }) => {
         </div>
       )}
 
-      {/* ================= MODAL EXCLUSIVO: VISOR INLINE DE FOTO ================= */}
+      {/* ================= MODAL EXCLUSIVO: VISOR INLINE DE FOTO DINÁMICO ================= */}
       {fotoModalUrl && (
         <div  
           onClick={() => setFotoModalUrl(null)}  
@@ -544,7 +597,7 @@ const MonitorAsistencias = ({ onBack }) => {
             <div className="bg-[#0f172a] p-5 flex justify-between items-center border-b border-gray-800">
               <div>
                 <p className="text-green-400 text-[9px] font-black uppercase tracking-widest italic">Visor de Evidencia Real</p>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">Planilla del Encuentro</h3>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">{fotoModalTitulo}</h3>
               </div>
               <button  
                 onClick={() => setFotoModalUrl(null)}
