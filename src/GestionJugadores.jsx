@@ -73,6 +73,29 @@ const GestionJugadores = ({ alRegistro }) => {
     setIsViewModalOpen(true);
   };
 
+  // 👈 MODIFICACIÓN QUIRÚRGICA: Función para actualizar la foto de perfil en Base64 al vuelo
+  const handleFotoUploadInline = async (e, jugadorId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        await api.put(`/api/jugadores/${jugadorId}/foto`, { foto_perfil: reader.result });
+        alert("✅ Foto de credencial actualizada correctamente");
+        
+        // Sincroniza estados inline para reflejar el cambio en caliente
+        if (jugadorSeleccionado && jugadorSeleccionado.id === jugadorId) {
+          setJugadorSeleccionado({ ...jugadorSeleccionado, foto_perfil: reader.result });
+        }
+        cargarDatos();
+      } catch (err) {
+        alert("❌ Error al subir la foto de perfil");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -101,7 +124,7 @@ const GestionJugadores = ({ alRegistro }) => {
         <div className="bg-[#0f172a] p-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left w-full md:w-auto">
             <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bitácora Digital de Atletas</h3>
-            <p className="text-gray-500 text- text-xs font-bold uppercase tracking-widest">Gestión de Credenciales QR</p>
+            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Gestión de Credenciales QR</p>
           </div>
 
           <div className="relative w-full md:w-80">
@@ -239,7 +262,7 @@ const GestionJugadores = ({ alRegistro }) => {
         </div>
       )}
 
-      {/* ================= MODAL: LICENCIA / CREDENCIAL DIGITAL QR ================= */}
+      {/* ================= MODAL: LICENCIA / CREDENCIAL DIGITAL QR (CON EVOLUCIÓN FOTO DE PERFIL) ================= */}
       {isViewModalOpen && jugadorSeleccionado && (
         <div 
           onClick={() => setIsViewModalOpen(false)} 
@@ -258,7 +281,9 @@ const GestionJugadores = ({ alRegistro }) => {
             </div>
 
             <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6 flex flex-col items-center">
+              
+              {/* COLUMNA IZQUIERDA: CÓDIGO QR COMPUESTO */}
+              <div className="space-y-6 flex flex-col items-center justify-center">
                 <div className="bg-white p-5 rounded-3xl shadow-2xl flex flex-col items-center">
                   <QRCodeSVG 
                     value={JSON.stringify({id: jugadorSeleccionado.id, n: jugadorSeleccionado.nombre})} 
@@ -271,7 +296,7 @@ const GestionJugadores = ({ alRegistro }) => {
                       width: 45,
                       align: 'center',
                       excavate: true,
-                    }}
+                      }}
                   />
                   <p className="text-[10px] text-gray-500 font-black uppercase mt-4 tracking-widest italic">
                     Scannable ID Card
@@ -279,8 +304,31 @@ const GestionJugadores = ({ alRegistro }) => {
                 </div>
               </div>
 
-              <div className="space-y-8 text-left">
-                <div>
+              {/* COLUMNA DERECHA: EXPEDIENTE HISTÓRICO Y FOTO DE CREDENCIAL INLINE */}
+              <div className="space-y-6 text-left flex flex-col justify-between">
+                
+                {/* 👈 MODIFICACIÓN QUIRÚRGICA: Recuadro dinámico para previsualización y carga directa de foto oficial */}
+                <div className="flex items-center gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800 relative group">
+                  <label className="w-20 h-20 bg-[#0f172a] rounded-xl border border-dashed border-gray-700 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 hover:border-blue-500 transition-colors" title="Haz clic para cambiar foto">
+                    {jugadorSeleccionado.foto_perfil ? (
+                      <img src={jugadorSeleccionado.foto_perfil} alt="Atleta" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[8px] text-gray-600 font-black text-center uppercase p-1">Cargar Foto</span>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => handleFotoUploadInline(e, jugadorSeleccionado.id)} 
+                    />
+                  </label>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white font-extrabold text-sm uppercase truncate">Fotografía Oficial</p>
+                    <p className="text-gray-500 text-[9px] uppercase leading-relaxed">Clic sobre el recuadro para actualizar la captura biométrica del roster</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 pt-2">
                   <h4 className="text-blue-500 text-[10px] font-black uppercase tracking-widest mb-3 italic underline decoration-blue-500/30">Expediente</h4>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
@@ -311,6 +359,7 @@ const GestionJugadores = ({ alRegistro }) => {
                     )}
                   </div>
                 </div>
+
               </div>
             </div>
 
