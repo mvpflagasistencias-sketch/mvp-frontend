@@ -86,15 +86,7 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
           </button>
 
           {/* 👈 NUEVO ENLACE: Acceso directo al Portal de Atletas en la misma tarjeta */}
-          <div className="pt-2">
-            <button 
-              type="button" 
-              onClick={onSwitchToJugador}
-              className="w-full py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-bold border border-blue-600/30 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-md"
-            >
-              ¿Eres Jugador? Licencia Digital →
-            </button>
-          </div>
+          
         </div>
       </form>
     </div>
