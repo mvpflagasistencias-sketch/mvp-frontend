@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from './api';
-// Nota: Puedes importar aquí tu componente de QR, por ejemplo: import { QRCodeSVG } from 'qrcode.react';
+// IMPORTAMOS EL EDITOR DE AVATAR QUE CREAMOS
+import AvatarEditor from './AvatarEditor'; 
 
 const PerfilJugador = ({ jugadorId, onLogout }) => {
   const [perfil, setPerfil] = useState(null);
@@ -11,6 +12,10 @@ const PerfilJugador = ({ jugadorId, onLogout }) => {
       try {
         const idActual = jugadorId || localStorage.getItem('atleta_id');
         const res = await api.get(`/api/jugadores/perfil/${idActual}`);
+        // IMPORTANTE: Si avatar_config llega como string, lo parseamos a objeto
+        if (res.data.avatar_config && typeof res.data.avatar_config === 'string') {
+          res.data.avatar_config = JSON.parse(res.data.avatar_config);
+        }
         setPerfil(res.data);
       } catch (err) {
         console.error("Error al obtener perfil del atleta", err);
@@ -51,12 +56,13 @@ const PerfilJugador = ({ jugadorId, onLogout }) => {
         {/* Cuerpo de la Licencia */}
         <div className="p-6 flex flex-col items-center gap-4">
           
-          {/* Contenedor de Fotografía Biométrica */}
-          <div className="w-32 h-32 bg-[#0f172a] rounded-full border-2 border-blue-500 overflow-hidden shrink-0 shadow-lg">
+          {/* Contenedor de Fotografía Biométrica o Avatar */}
+          <div className="w-32 h-32 bg-[#0f172a] rounded-full border-2 border-blue-500 overflow-hidden shrink-0 shadow-lg flex items-center justify-center">
             {perfil.foto_perfil ? (
               <img src={perfil.foto_perfil} alt="Foto Credencial" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-bold">SIN FOTO</div>
+              /* AQUI ENTRA EL AVATAR AUTOMÁTICAMENTE SI NO HAY FOTO */
+              <AvatarEditor config={perfil.avatar_config} />
             )}
           </div>
 
@@ -73,10 +79,8 @@ const PerfilJugador = ({ jugadorId, onLogout }) => {
 
           {/* Contenedor del Código QR Autónomo */}
           <div className="bg-white p-4 rounded-2xl shadow-inner mt-2">
-            {/* Aquí pintas tu QR real. Por ahora pasamos el qr_token que leerá Android */}
             <div className="text-black font-bold text-xs p-2 bg-gray-100 rounded-lg">
               <p className="font-black text-[10px] text-gray-500 uppercase tracking-wider mb-2">Escanear Asistencia</p>
-              {/* <QRCodeSVG value={JSON.stringify({id: perfil.id, n: perfil.nombre})} size={140} /> */}
               <span className="text-xs font-mono select-all block mt-1">[ {perfil.qr_token} ]</span>
             </div>
           </div>
