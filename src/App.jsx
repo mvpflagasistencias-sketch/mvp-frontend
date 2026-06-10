@@ -31,23 +31,21 @@ function App() {
   };
 
   // =========================================================================
-  // 🏈 CONTROL DE FLUJO EXCLUSIVO PARA EL PORTAL DE JUGADORES
+  // 🏈 EVALUACIÓN 1: CONTROL DE FLUJO EXCLUSIVO PARA EL PORTAL DE JUGADORES
   // =========================================================================
   if (portalMode === 'jugador') {
     // Si el jugador no ha iniciado sesión, renderizamos su login privado
     if (!jugadorActual && !localStorage.getItem('atleta_id')) {
       return (
-        <div>
+        <div className="min-h-screen bg-[#0f172a] flex flex-col justify-center items-center p-4">
           <LoginJugador onLoginSuccess={(jugador) => setJugadorActual(jugador)} />
           {/* Botón flotante discreto para regresar al login administrativo del Staff */}
-          <div className="text-center bg-[#0f172a] pb-8">
-            <button 
-              onClick={() => setPortalMode('staff')} 
-              className="text-xs font-bold text-gray-500 hover:text-blue-400 uppercase tracking-wider transition-all"
-            >
-              ← Volver al Acceso de Staff / Árbitros
-            </button>
-          </div>
+          <button 
+            onClick={() => setPortalMode('staff')} 
+            className="text-xs font-bold text-gray-500 hover:text-blue-400 uppercase tracking-wider transition-all mt-4 mb-8"
+          >
+            ← Volver al Acceso de Staff / Árbitros
+          </button>
         </div>
       );
     }
@@ -65,17 +63,19 @@ function App() {
   }
 
   // =========================================================================
-  // 🔑 FLUJO ESTÁNDAR Y ORIGINAL PARA EL STAFF ADMINISTRATIVO
+  // 🔑 EVALUACIÓN 2: FLUJO ESTÁNDAR Y ORIGINAL PARA EL STAFF ADMINISTRATIVO
   // =========================================================================
   if (!user) {
     return (
-      <div>
+      <div className="min-h-screen bg-[#0f172a] flex flex-col justify-center items-center p-4">
+        {/* Renderiza tu tarjeta de login administrativo de la captura */}
         <Login onLoginSuccess={handleLoginSuccess} />
-        {/* Botón de desvío para que el jugador se desplace a su login privado sin tocar código */}
-        <div className="text-center bg-[#0F172A] pb-10">
+        
+        {/* 👈 ENVOLTURA CORRECTA: El botón ahora se renderiza en la misma pantalla justo debajo */}
+        <div className="text-center w-full max-w-md mt-6">
           <button 
             onClick={() => setPortalMode('jugador')} 
-            className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-bold border border-blue-600/30 rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg"
+            className="w-full py-4 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-bold border border-blue-600/30 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-black/40"
           >
             ¿Eres Jugador? Ingresa a tu Licencia Digital →
           </button>
