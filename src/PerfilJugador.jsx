@@ -56,19 +56,18 @@ const PerfilJugador = ({ jugadorId, onLogout }) => {
         {/* Cuerpo de la Licencia */}
         <div className="p-6 flex flex-col items-center gap-4">
           
-          {/* Contenedor de Fotografía Biométrica o Avatar */}
-          <div className="relative w-32 h-32 bg-[#0f172a] rounded-full border-2 border-blue-500 overflow-hidden shrink-0 shadow-lg flex items-center justify-center">
-            {/* AVATAR EDITOR SIEMPRE PRESENTE */}
-            <AvatarEditor config={perfil.avatar_config} />
-            
-            {/* FOTO DE PERFIL SI EXISTE (Z-INDEX SUPERIOR) */}
-            {perfil.foto_perfil && (
-              <img 
-                src={perfil.foto_perfil} 
-                alt="Foto Credencial" 
-                className="absolute w-full h-full object-cover z-40" 
-              />
+          {/* Contenedor de Fotografía Biométrica */}
+          <div className="w-32 h-32 bg-[#0f172a] rounded-full border-2 border-blue-500 overflow-hidden shrink-0 shadow-lg flex items-center justify-center">
+            {perfil.foto_perfil ? (
+              <img src={perfil.foto_perfil} alt="Foto Credencial" className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-gray-500 text-xs">Sin Foto</div>
             )}
+          </div>
+
+          {/* AQUÍ VA EL "MUÑEQUITO" (AVATAR) SEPARADO */}
+          <div className="mt-2 w-20 h-20 bg-[#0f172a] rounded-full border-2 border-yellow-500 overflow-hidden flex items-center justify-center shadow-lg">
+            <AvatarEditor config={perfil.avatar_config} />
           </div>
 
           {/* Datos del Jugador */}
