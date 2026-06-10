@@ -12,7 +12,8 @@ const RegistroJugadores = ({ onBack }) => {
     nombre_tutor: '',
     numero_jersey: '',
     correo: '',
-    categoria: '' // <--- SE AGREGA AL ESTADO INICIAL
+    categoria: '', // <--- SE AGREGA AL ESTADO INICIAL
+    foto_perfil: null // 👈 MODIFICACIÓN QUIRÚRGICA: Estado para el string Base64 de la foto
   });
 
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,18 @@ const RegistroJugadores = ({ onBack }) => {
     fetchEquipos();
   }, []);
 
+  // 👈 MODIFICACIÓN QUIRÚRGICA: Procesador de archivo para conversión Base64 en caliente
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, foto_perfil: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.equipo) return alert("Por favor selecciona un equipo"); 
@@ -43,12 +56,13 @@ const RegistroJugadores = ({ onBack }) => {
         telefono: formData.telefono,
         equipo: formData.equipo, // ID seleccionado
         tutor: formData.nombre_tutor,
-        categoria: formData.categoria // <--- SE AGREGA AL ENVÍO
+        categoria: formData.categoria, // <--- SE AGREGA AL ENVÍO
+        foto_perfil: formData.foto_perfil // 👈 MODIFICACIÓN QUIRÚRGICA: Envío de foto al backend
       };
 
       // Petición a través de la instancia centralizada
       await api.post('/api/jugadores/registro', datosLimpios);
-      alert('✅ ¡Jugador guardado en la base de datos!');
+      alert('✅ ¡Jugador guardado con éxito y foto de perfil enlazada!');
       onBack();
     } catch (err) {
       alert('❌ Error: ' + (err.response?.data?.error || 'Error interno'));
@@ -76,6 +90,27 @@ const RegistroJugadores = ({ onBack }) => {
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
+          {/* 👈 MODIFICACIÓN QUIRÚRGICA: Componente visual de captura de foto de perfil credencial */}
+          <div className="md:col-span-2 bg-[#141b2e] p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-center gap-6 text-left">
+            <div className="w-24 h-24 bg-[#0f172a] rounded-full border-2 border-dashed border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+              {formData.foto_perfil ? (
+                <img src={formData.foto_perfil} alt="Previsualización" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px] text-gray-600 font-bold uppercase text-center p-2">Sin Foto</span>
+              )}
+            </div>
+            <div className="space-y-2 w-full">
+              <label className="block text-white text-sm font-bold">Foto Oficial de Credencial</label>
+              <p className="text-gray-500 text-[10px] uppercase font-semibold">Carga la imagen del rostro para la verificación contra "Cachirules" en el campo móvil</p>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFotoChange}
+                className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 file:cursor-pointer transition-all"
+              />
+            </div>
+          </div>
+
           <div className="md:col-span-2 text-left">
             <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Nombre del Jugador</label>
             <input 
