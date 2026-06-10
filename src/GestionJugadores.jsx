@@ -262,7 +262,7 @@ const GestionJugadores = ({ alRegistro }) => {
         </div>
       )}
 
-      {/* ================= MODAL: LICENCIA / CREDENCIAL DIGITAL QR (CON EVOLUCIÓN FOTO DE PERFIL) ================= */}
+      {/* ================= MODAL: LICENCIA / CREDENCIAL DIGITAL QR ================= */}
       {isViewModalOpen && jugadorSeleccionado && (
         <div 
           onClick={() => setIsViewModalOpen(false)} 
@@ -272,12 +272,21 @@ const GestionJugadores = ({ alRegistro }) => {
             onClick={(e) => e.stopPropagation()} 
             className="bg-[#1e293b] w-full max-w-2xl rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300"
           >
-            <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-10 text-left relative">
-              <span className="bg-blue-500 text-[10px] px-2 py-1 rounded font-black uppercase tracking-widest text-white">Atleta Verificado</span>
-              <h2 className="text-4xl font-black text-white uppercase mt-2 tracking-tighter italic leading-none">
-                {jugadorSeleccionado.nombre}
-              </h2>
-              <p className="text-blue-300 font-mono text-xs mt-2 uppercase">Licencia Digital MVP FLAG</p>
+            {/* 👈 MODIFICACIÓN QUIRÚRGICA: Cabecera con renderizado dinámico del rostro si ya existe foto de registro */}
+            <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-10 text-left relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <span className="bg-blue-500 text-[10px] px-2 py-1 rounded font-black uppercase tracking-widest text-white">Atleta Verificado</span>
+                <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">
+                  {jugadorSeleccionado.nombre}
+                </h2>
+                <p className="text-blue-300 font-mono text-xs uppercase">Licencia Digital MVP FLAG</p>
+              </div>
+              
+              {jugadorSeleccionado.foto_perfil && (
+                <div className="w-20 h-20 bg-gray-900 rounded-2xl border-2 border-blue-400 overflow-hidden shadow-xl shrink-0 hidden sm:block">
+                  <img src={jugadorSeleccionado.foto_perfil} alt=" Rostro Registro" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
 
             <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -307,7 +316,7 @@ const GestionJugadores = ({ alRegistro }) => {
               {/* COLUMNA DERECHA: EXPEDIENTE HISTÓRICO Y FOTO DE CREDENCIAL INLINE */}
               <div className="space-y-6 text-left flex flex-col justify-between">
                 
-                {/* 👈 MODIFICACIÓN QUIRÚRGICA: Recuadro dinámico para previsualización y carga directa de foto oficial */}
+                {/* Recuadro dinámico para previsualización y carga directa de foto oficial */}
                 <div className="flex items-center gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800 relative group">
                   <label className="w-20 h-20 bg-[#0f172a] rounded-xl border border-dashed border-gray-700 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 hover:border-blue-500 transition-colors" title="Haz clic para cambiar foto">
                     {jugadorSeleccionado.foto_perfil ? (
