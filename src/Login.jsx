@@ -2,7 +2,8 @@ import { useState } from 'react';
 // IMPORTANTE: Cambiamos axios por nuestra instancia personalizada
 import api from './api';
 
-const Login = ({ onLoginSuccess }) => {
+// RECIBIMOS LA PROPIEDAD: onSwitchToJugador para cambiar de portal
+const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -14,9 +15,9 @@ const Login = ({ onLoginSuccess }) => {
     try {
       // CORRECCIÓN: Quitamos el '/api' inicial para evitar que se duplique con la baseURL
       const res = await api.post('/api/staff/login', {
-  usuario,
-  password
-});
+        usuario,
+        password
+      });
 
       console.log("Respuesta del servidor:", res.data);
 
@@ -83,6 +84,17 @@ const Login = ({ onLoginSuccess }) => {
           >
             {cargando ? 'Verificando...' : 'Entrar al Sistema'}
           </button>
+
+          {/* 👈 NUEVO ENLACE: Acceso directo al Portal de Atletas en la misma tarjeta */}
+          <div className="pt-2">
+            <button 
+              type="button" 
+              onClick={onSwitchToJugador}
+              className="w-full py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-bold border border-blue-600/30 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-md"
+            >
+              ¿Eres Jugador? Licencia Digital →
+            </button>
+          </div>
         </div>
       </form>
     </div>
