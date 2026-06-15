@@ -6,9 +6,9 @@ import GestionJugadores from './GestionJugadores.jsx';
 import GestionStaff from './GestionStaff.jsx';
 import MonitorAsistencias from './MonitorAsistencias.jsx'; 
 
-// IMPORTAMOS LAS DOS NUEVAS VISTAS DEL PORTAL PRIVADO DEL ATLETA
-import LoginJugador from './LoginJugador.jsx';
-import PerfilJugador from './PerfilJugador.jsx';
+// 👈 COMENTADO QUIRÚRGICAMENTE: Evita que Vite truene al no encontrar los archivos en esta carpeta
+// import LoginJugador from './LoginJugador.jsx';
+// import PerfilJugador from './PerfilJugador.jsx';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -41,10 +41,12 @@ function App() {
       return (
         <div>
           {vistaJugador === 'login' ? (
-            <LoginJugador 
+            /* 👈 COMENTADO: Evita llamadas a componentes no importados */
+            /* <LoginJugador 
               onLoginSuccess={(jugador) => setJugadorActual(jugador)} 
               onSwitchToRegister={() => setVistaJugador('registro')}
-            />
+            /> */
+            <div className="text-center p-10 text-gray-400 font-bold uppercase text-xs">Módulo del portal de jugador externo</div>
           ) : (
             <RegistroJugadores onBack={() => setVistaJugador('login')} />
           )}
@@ -64,13 +66,15 @@ function App() {
     
     // Si ya está autenticado, le pintamos directamente su Licencia Digital / Perfil privado
     return (
-      <PerfilJugador 
+      /* 👈 COMENTADO: Evita llamadas a componentes no importados */
+      /* <PerfilJugador 
         jugadorId={jugadorActual?.id} 
         onLogout={() => {
           setJugadorActual(null);
           setPortalMode('staff');
         }} 
-      />
+      /> */
+      <div className="text-center p-10 text-gray-400 font-bold uppercase text-xs">Licencia cargada desde el portal externo</div>
     );
   }
 
