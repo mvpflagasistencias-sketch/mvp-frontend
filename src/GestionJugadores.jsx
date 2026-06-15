@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// IMPORTANTE: Cambiamos axios por nuestra instancia personalizada
+// IMPORTANTE: Instancia personalizada para producción
 import api from './api';
 import logoMvp from './assets/logo-mvp.png';
 import { QRCodeSVG } from 'qrcode.react';
@@ -20,7 +20,6 @@ const GestionJugadores = ({ alRegistro }) => {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      // Usamos api.get en lugar de axios.get y quitamos la URL base
       const [resJugadores, resEquipos] = await Promise.all([
         api.get('/api/jugadores'),
         api.get('/api/equipos')
@@ -58,13 +57,23 @@ const GestionJugadores = ({ alRegistro }) => {
 
   const handleDelete = async (id, nombre) => {
     if (window.confirm(`¿Seguro que deseas eliminar a ${nombre}?`)) {
-      await api.delete(`/api/jugadores/${id}`);
-      cargarDatos();
+      try {
+        await api.delete(`/api/jugadores/${id}`);
+        cargarDatos();
+      } catch (err) {
+        alert("❌ Error al eliminar el atleta");
+      }
     }
   };
 
   const abrirModal = (jugador) => {
-    setJugadorAEditar({ ...jugador });
+    // Aseguramos que los campos tengan un respaldo para evitar inputs no controlados
+    setJugadorAEditar({ 
+      ...jugador,
+      equipo_id: jugador.equipo_id || jugador.equipo || "",
+      telefono: jugador.telefono || "",
+      categoria: jugador.categoria || ""
+    });
     setIsEditModalOpen(true);
   };
 
@@ -73,7 +82,7 @@ const GestionJugadores = ({ alRegistro }) => {
     setIsViewModalOpen(true);
   };
 
-  // 👈 MODIFICACIÓN QUIRÚRGICA: Función para actualizar la foto de perfil en Base64 al vuelo
+  // Función para actualizar la foto de perfil en Base64 al vuelo
   const handleFotoUploadInline = async (e, jugadorId) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -84,7 +93,6 @@ const GestionJugadores = ({ alRegistro }) => {
         await api.put(`/api/jugadores/${jugadorId}/foto`, { foto_perfil: reader.result });
         alert("✅ Foto de credencial actualizada correctamente");
         
-        // Sincroniza estados inline para reflejar el cambio en caliente
         if (jugadorSeleccionado && jugadorSeleccionado.id === jugadorId) {
           setJugadorSeleccionado({ ...jugadorSeleccionado, foto_perfil: reader.result });
         }
@@ -99,12 +107,13 @@ const GestionJugadores = ({ alRegistro }) => {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Enviamos las llaves estandarizadas para el controlador de Node.js
       await api.put(`/api/jugadores/${jugadorAEditar.id}`, {
         nombre: jugadorAEditar.nombre,
         correo: jugadorAEditar.correo,
         telefono: jugadorAEditar.telefono,
-        equipo: jugadorAEditar.equipo_id,
-        categoria: jugadorAEditar.categoria // Se incluye categoría en actualización
+        equipo: jugadorAEditar.equipo_id, 
+        categoria: jugadorAEditar.categoria 
       });
       alert("✅ Datos actualizados correctamente");
       setIsEditModalOpen(false);
@@ -118,9 +127,7 @@ const GestionJugadores = ({ alRegistro }) => {
 
   return (
     <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
       <div className="bg-[#1e293b] rounded-3xl border border-gray-700 shadow-2xl overflow-hidden">
-        
         <div className="bg-[#0f172a] p-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left w-full md:w-auto">
             <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bitácora Digital de Atletas</h3>
@@ -177,16 +184,16 @@ const GestionJugadores = ({ alRegistro }) => {
                   </td>
                   <td className="p-5 text-center">
                     <div className="flex flex-col items-center gap-1">
-                        <span className="bg-blue-900/20 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase italic">
+                      <span className="bg-blue-900/20 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase italic">
                         {j.nombre_equipo || 'Agente Libre'}
-                        </span>
-                        {j.categoria && (
-                          <span className="text-[9px] text-gray-500 font-bold tracking-widest">{j.categoria}</span>
-                        )}
+                      </span>
+                      {j.categoria && (
+                        <span className="text-[9px] text-gray-500 font-bold tracking-widest">{j.categoria}</span>
+                      )}
                     </div>
                   </td>
                   <td className="p-5 text-center">
-                    <p className="text-xs text-gray-400 font-mono italic">📞 {j.telefono}</p>
+                    <p className="text-xs text-gray-400 font-mono italic">📞 {j.telefono || 'Sin Teléfono'}</p>
                   </td>
                   <td className="p-5 space-x-6 text-center">
                     <button onClick={() => abrirModal(j)} className="text-blue-400 hover:scale-125 transition-transform text-lg">✏️</button>
@@ -223,9 +230,10 @@ const GestionJugadores = ({ alRegistro }) => {
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">Nombre del Atleta</label>
                 <input 
                   type="text" 
-                  value={jugadorAEditar.nombre}
+                  value={jugadorAEditar.nombre || ""}
                   className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold uppercase transition-all"
                   onChange={(e) => setJugadorAEditar({...jugadorAEditar, nombre: e.target.value})}
+                  required
                 />
               </div>
 
@@ -233,13 +241,29 @@ const GestionJugadores = ({ alRegistro }) => {
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">Equipo Registrado</label>
                 <select 
                   value={jugadorAEditar.equipo_id || ""}
-                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all"
+                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
                   onChange={(e) => setJugadorAEditar({...jugadorAEditar, equipo_id: e.target.value})}
                 >
-                  <option value="">-- SELECCIONAR EQUIPO --</option>
+                  <option value="">-- AGENTE LIBRE / SIN EQUIPO --</option>
                   {equipos.map(eq => (
-                    <option key={eq.id} value={eq.id}>{eq.nombre_equipo}</option>
+                    <option key={eq.id} value={eq.id}>{eq.nombre_equipo.toUpperCase()}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* 👈 ENTRADA AGREGADA: Modificar categoría de juego */}
+              <div className="text-left text-white">
+                <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">Categoría / Rama</label>
+                <select 
+                  value={jugadorAEditar.categoria || ""}
+                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
+                  onChange={(e) => setJugadorAEditar({...jugadorAEditar, categoria: e.target.value})}
+                >
+                  <option value="">-- SELECCIONAR CATEGORÍA --</option>
+                  <option value="Femenil">Femenil</option>
+                  <option value="Varonil">Varonil</option>
+                  <option value="Mixto">Mixto</option>
+                  <option value="Comunidad UTN">Comunidad UTN</option>
                 </select>
               </div>
 
@@ -247,7 +271,7 @@ const GestionJugadores = ({ alRegistro }) => {
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">Contacto Directo</label>
                 <input 
                   type="text" 
-                  value={jugadorAEditar.telefono}
+                  value={jugadorAEditar.telefono || ""}
                   className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all"
                   onChange={(e) => setJugadorAEditar({...jugadorAEditar, telefono: e.target.value})}
                 />
@@ -283,13 +307,12 @@ const GestionJugadores = ({ alRegistro }) => {
               
               {jugadorSeleccionado.foto_perfil && (
                 <div className="w-20 h-20 bg-gray-900 rounded-2xl border-2 border-blue-400 overflow-hidden shadow-xl shrink-0 hidden sm:block">
-                  <img src={jugadorSeleccionado.foto_perfil} alt=" Rostro Registro" className="w-full h-full object-cover" />
+                  <img src={jugadorSeleccionado.foto_perfil} alt="Rostro Registro" className="w-full h-full object-cover" />
                 </div>
               )}
             </div>
 
             <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-              
               <div className="space-y-6 flex flex-col items-center justify-center">
                 <div className="bg-white p-5 rounded-3xl shadow-2xl flex flex-col items-center">
                   <QRCodeSVG 
@@ -303,7 +326,7 @@ const GestionJugadores = ({ alRegistro }) => {
                       width: 45,
                       align: 'center',
                       excavate: true,
-                      }}
+                    }}
                   />
                   <p className="text-[10px] text-gray-500 font-black uppercase mt-4 tracking-widest italic">
                     Scannable ID Card
@@ -312,7 +335,6 @@ const GestionJugadores = ({ alRegistro }) => {
               </div>
 
               <div className="space-y-6 text-left flex flex-col justify-between">
-                
                 <div className="flex items-center gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800 relative group">
                   <label className="w-20 h-20 bg-[#0f172a] rounded-xl border border-dashed border-gray-700 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 hover:border-blue-500 transition-colors" title="Haz clic para cambiar foto">
                     {jugadorSeleccionado.foto_perfil ? (
@@ -341,10 +363,8 @@ const GestionJugadores = ({ alRegistro }) => {
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-black">Equipo / Rama</p>
                         <p className="text-white font-black uppercase italic">
-                            {jugadorSeleccionado.nombre_equipo || 
-                             equipos.find(eq => eq.id == jugadorSeleccionado.equipo_id)?.nombre_equipo || 
-                             'AGENTE LIBRE'} 
-                            {jugadorSeleccionado.categoria && ` - ${jugadorSeleccionado.categoria}`}
+                          {jugadorSeleccionado.nombre_equipo || 'Agente Libre'} 
+                          {jugadorSeleccionado.categoria && ` - ${jugadorSeleccionado.categoria}`}
                         </p>
                       </div>
                     </div>
@@ -352,7 +372,7 @@ const GestionJugadores = ({ alRegistro }) => {
                       <div className="bg-green-500/10 p-3 rounded-xl text-green-400">📱</div>
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-black">Teléfono</p>
-                        <p className="text-white font-mono">{jugadorSeleccionado.telefono}</p>
+                        <p className="text-white font-mono">{jugadorSeleccionado.telefono || 'Sin Teléfono'}</p>
                       </div>
                     </div>
                     {jugadorSeleccionado.tutor && jugadorSeleccionado.tutor.trim() !== "" && (
@@ -366,7 +386,6 @@ const GestionJugadores = ({ alRegistro }) => {
                     )}
                   </div>
                 </div>
-
               </div>
             </div>
 
