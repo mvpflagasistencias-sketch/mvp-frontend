@@ -18,6 +18,8 @@ function App() {
   const [portalMode, setPortalMode] = useState('staff'); 
   // 🚀 NUEVO ESTADO: Almacena los datos del jugador autenticado en su sesión privada
   const [jugadorActual, setJugadorActual] = useState(null);
+  // 🚀 NUEVO ESTADO: Controla la vista dentro del portal de jugadores (login o registro)
+  const [vistaJugador, setVistaJugador] = useState('login');
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
@@ -34,11 +36,19 @@ function App() {
   // 🏈 CONTROL DE FLUJO EXCLUSIVO PARA EL PORTAL DE JUGADORES
   // =========================================================================
   if (portalMode === 'jugador') {
-    // Si el jugador no ha iniciado sesión, renderizamos su login privado
+    // Si el jugador no ha iniciado sesión, renderizamos su login o registro privado
     if (!jugadorActual && !localStorage.getItem('atleta_id')) {
       return (
         <div>
-          <LoginJugador onLoginSuccess={(jugador) => setJugadorActual(jugador)} />
+          {vistaJugador === 'login' ? (
+            <LoginJugador 
+              onLoginSuccess={(jugador) => setJugadorActual(jugador)} 
+              onSwitchToRegister={() => setVistaJugador('registro')}
+            />
+          ) : (
+            <RegistroJugadores onBack={() => setVistaJugador('login')} />
+          )}
+          
           {/* Botón flotante discreto para regresar al login administrativo del Staff */}
           <div className="text-center bg-[#0f172a] pb-8">
             <button 
@@ -58,7 +68,7 @@ function App() {
         jugadorId={jugadorActual?.id} 
         onLogout={() => {
           setJugadorActual(null);
-          setPortalMode('staff'); // Al cerrar sesión del jugador, regresa al entorno por defecto
+          setPortalMode('staff');
         }} 
       />
     );
@@ -153,7 +163,7 @@ function App() {
         </div>
         <div className="flex items-center gap-4">
           <span className="hidden md:inline text-gray-400 text-[10px] font-black uppercase tracking-widest">
-            Sesión activa: <strong className="text-white ml-1">{user.nombre}</strong>
+            Sesión activa: <strong className="text-white ml-1">{user?.nombre}</strong>
           </span>
           <button onClick={handleLogout} className="bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-xl border border-red-600/30 transition-all font-black text-[10px] uppercase tracking-widest">
             Cerrar Sesión
