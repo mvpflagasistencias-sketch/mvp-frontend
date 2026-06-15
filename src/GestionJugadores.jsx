@@ -185,7 +185,11 @@ const GestionJugadores = ({ alRegistro }) => {
                   <td className="p-5 text-center">
                     <div className="flex flex-col items-center gap-1">
                       <span className="bg-blue-900/20 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase italic">
-                        {j.nombre_equipo || 'Agente Libre'}
+                        {/* 👈 CORRECCIÓN ADICIONAL PARA LA TABLA PRINCIPAL */}
+                        {isNaN(j.nombre_equipo) 
+                          ? (j.nombre_equipo || 'Agente Libre')
+                          : (equipos.find(e => e.id === Number(j.nombre_equipo))?.nombre_equipo || 'Agente Libre')
+                        }
                       </span>
                       {j.categoria && (
                         <span className="text-[9px] text-gray-500 font-bold tracking-widest">{j.categoria}</span>
@@ -251,7 +255,6 @@ const GestionJugadores = ({ alRegistro }) => {
                 </select>
               </div>
 
-              {/* 👈 ENTRADA AGREGADA: Modificar categoría de juego */}
               <div className="text-left text-white">
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">Categoría / Rama</label>
                 <select 
@@ -362,8 +365,12 @@ const GestionJugadores = ({ alRegistro }) => {
                       <div className="bg-blue-500/10 p-3 rounded-xl text-blue-400">🏆</div>
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-black">Equipo / Rama</p>
+                        {/* 👈 MODIFICACIÓN QUIRÚRGICA APLICADA: Intercepta IDs numéricos y renderiza el nombre del equipo real */}
                         <p className="text-white font-black uppercase italic">
-                          {jugadorSeleccionado.nombre_equipo || 'Agente Libre'} 
+                          {isNaN(jugadorSeleccionado.nombre_equipo) 
+                            ? (jugadorSeleccionado.nombre_equipo || 'Agente Libre')
+                            : (equipos.find(e => e.id === Number(jugadorSeleccionado.nombre_equipo))?.nombre_equipo || 'Agente Libre')
+                          }
                           {jugadorSeleccionado.categoria && ` - ${jugadorSeleccionado.categoria}`}
                         </p>
                       </div>
