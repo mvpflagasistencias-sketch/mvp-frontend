@@ -181,7 +181,7 @@ const GestionJugadores = ({ alRegistro }) => {
                         {j.nombre_equipo || 'Agente Libre'}
                         </span>
                         {j.categoria && (
-                            <span className="text-[9px] text-gray-500 font-bold tracking-widest">{j.categoria}</span>
+                          <span className="text-[9px] text-gray-500 font-bold tracking-widest">{j.categoria}</span>
                         )}
                     </div>
                   </td>
@@ -272,7 +272,6 @@ const GestionJugadores = ({ alRegistro }) => {
             onClick={(e) => e.stopPropagation()} 
             className="bg-[#1e293b] w-full max-w-2xl rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300"
           >
-            {/* 👈 MODIFICACIÓN QUIRÚRGICA: Cabecera con renderizado dinámico del rostro si ya existe foto de registro */}
             <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-10 text-left relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div className="space-y-2">
                 <span className="bg-blue-500 text-[10px] px-2 py-1 rounded font-black uppercase tracking-widest text-white">Atleta Verificado</span>
@@ -291,7 +290,6 @@ const GestionJugadores = ({ alRegistro }) => {
 
             <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
               
-              {/* COLUMNA IZQUIERDA: CÓDIGO QR COMPUESTO */}
               <div className="space-y-6 flex flex-col items-center justify-center">
                 <div className="bg-white p-5 rounded-3xl shadow-2xl flex flex-col items-center">
                   <QRCodeSVG 
@@ -313,10 +311,8 @@ const GestionJugadores = ({ alRegistro }) => {
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA: EXPEDIENTE HISTÓRICO Y FOTO DE CREDENCIAL INLINE */}
               <div className="space-y-6 text-left flex flex-col justify-between">
                 
-                {/* Recuadro dinámico para previsualización y carga directa de foto oficial */}
                 <div className="flex items-center gap-4 bg-[#141b2e] p-4 rounded-2xl border border-gray-800 relative group">
                   <label className="w-20 h-20 bg-[#0f172a] rounded-xl border border-dashed border-gray-700 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 hover:border-blue-500 transition-colors" title="Haz clic para cambiar foto">
                     {jugadorSeleccionado.foto_perfil ? (
@@ -345,7 +341,9 @@ const GestionJugadores = ({ alRegistro }) => {
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-black">Equipo / Rama</p>
                         <p className="text-white font-black uppercase italic">
-                            {jugadorSeleccionado.nombre_equipo || 'Agente Libre'} 
+                            {jugadorSeleccionado.nombre_equipo || 
+                             equipos.find(eq => eq.id == jugadorSeleccionado.equipo_id)?.nombre_equipo || 
+                             'AGENTE LIBRE'} 
                             {jugadorSeleccionado.categoria && ` - ${jugadorSeleccionado.categoria}`}
                         </p>
                       </div>
