@@ -1,6 +1,9 @@
-const CardPromociones = ({ alGestionar }) => {
+// src/CardPromociones.jsx
+import React from 'react';
+
+const CardPromociones = ({ alGestionar = () => {} }) => {
   return (
-    <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 shadow-xl flex flex-col justify-between hover:border-yellow-500/50 transition-all">
+    <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 shadow-xl flex flex-col justify-between hover:border-yellow-600/50 transition-all">
       <div className="mb-4">
         <div className="text-3xl mb-2">🏷️</div>
         <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Promociones</h3>
