@@ -101,35 +101,26 @@ const GestionPromociones = ({ onBack }) => {
   // 🚀 ACCIÓN: ENVIAR PROMOCIÓN SELECCIONADA CON CRITERIOS DE SEGMENTACIÓN
   // =========================================================================
   const handleEnviarAJugadores = async (id) => {
-    if (!id) return;
     setEnviando(true);
-
     try {
-      const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tipoFiltro,
-          limite: tipoFiltro === 'top_asistencias' ? parseInt(limite, 10) : null,
-          equipoId: tipoFiltro === 'por_equipo' ? equipoId : null
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert(data.message || "¡Promoción difundida con éxito!");
-        cerrarModal();
-      } else {
-        alert(data.error || "No se pudo completar el envío de la promoción");
-      }
-    } catch (error) {
-      console.error("❌ Error en la petición de envío masivo:", error);
-      alert("Error de red al intentar despachar la promoción.");
+        const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipoFiltro, limite, equipoId })
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+            alert("¡Éxito! " + data.message);
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (err) {
+        alert("Error de conexión con el servidor");
     } finally {
-      setEnviando(false);
+        setEnviando(false); // ESTO QUITA EL "SEGMENTANDO..."
     }
-  };
+};
 
   // =========================================================================
   // 🚀 ACCIÓN UNIFICADA: CREAR (POST) O ACTUALIZAR (PUT) EN LA BASE DE DATOS
