@@ -5,6 +5,7 @@ const GestionPromociones = ({ onBack }) => {
 
   return (
     <div className="animate-in fade-in duration-500">
+      {/* Encabezado */}
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Gestión de <span className="text-yellow-500">Promociones</span>
@@ -19,16 +20,28 @@ const GestionPromociones = ({ onBack }) => {
 
       {/* Grid de Promociones */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#1e293b] p-8 rounded-3xl border border-yellow-500/30 flex flex-col items-center justify-center border-dashed">
-          <div className="text-4xl mb-4">➕</div>
-          <p className="text-gray-400 font-bold uppercase text-sm">Crear Nueva Promoción</p>
+        
+        {/* Tarjeta interactiva para Crear Nueva Promoción */}
+        <div className="bg-[#1e293b] p-8 rounded-3xl border border-yellow-500/30 flex flex-col items-center justify-center border-dashed cursor-pointer hover:border-yellow-500 hover:bg-[#243249] transition-all group">
+          <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">➕</div>
+          <p className="text-gray-400 group-hover:text-white font-bold uppercase text-sm transition-colors">
+            Crear Nueva Promoción
+          </p>
         </div>
 
-        {promociones.length === 0 && (
-          <div className="col-span-1 md:col-span-2 text-center py-20 text-gray-500 italic">
+        {/* Listado dinámico o Mensaje de lista vacía optimizado */}
+        {promociones.length === 0 ? (
+          <div className="flex items-center justify-center bg-[#1e293b]/30 border border-gray-800 rounded-3xl text-center p-8 text-gray-500 italic">
             No hay promociones activas en este momento.
           </div>
+        ) : (
+          promociones.map((promo) => (
+            <div key={promo.id}>
+              {/* Aquí mapearás el diseño de tus tarjetas de promoción reales */}
+            </div>
+          ))
         )}
+
       </div>
     </div>
   );
