@@ -7,6 +7,7 @@ const GestionPromociones = ({ onBack }) => {
   // Estados para capturar los datos del formulario (Sin código de cupón)
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [imagenUrl, setImagenUrl] = useState(''); // 🚀 NUEVO ESTADO: Imagen URL (Opcional)
   const [fechaFin, setFechaFin] = useState('');
 
   const handleCrearPromocion = (e) => {
@@ -18,6 +19,7 @@ const GestionPromociones = ({ onBack }) => {
       id: Date.now(),
       titulo: titulo.toUpperCase(), // Forzamos mayúsculas dinámicas para el estilo deportivo
       descripcion,
+      imagen_url: imagenUrl.trim() || null, // 🚀 SE AGREGA AL OBJETO DE LA PROMO
       fecha_fin: fechaFin || null
     };
 
@@ -26,6 +28,7 @@ const GestionPromociones = ({ onBack }) => {
     // Limpiamos el formulario y regresamos al listado
     setTitulo('');
     setDescripcion('');
+    setImagenUrl(''); // 🚀 LIMPIAR INPUT
     setFechaFin('');
     setMostrarFormulario(false);
   };
@@ -84,6 +87,20 @@ const GestionPromociones = ({ onBack }) => {
               />
             </div>
 
+            {/* INPUT: URL DE LA IMAGEN (🚀 NUEVO INPUT AÑADIDO) */}
+            <div className="group">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
+                URL de la Imagen (Opcional)
+              </label>
+              <input 
+                type="url" 
+                value={imagenUrl}
+                onChange={(e) => setImagenUrl(e.target.value)}
+                placeholder="https://ejemplo.com/foto-promocion.jpg"
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600"
+              />
+            </div>
+
             {/* INPUT: FECHA (Ocupando todo el ancho disponible con mejor diseño) */}
             <div className="group">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
@@ -130,7 +147,9 @@ const GestionPromociones = ({ onBack }) => {
             promociones.map((promo) => (
               <div 
                 key={promo.id} 
-                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in-95 duration-300"
+                // 🚀 CAMBIO VISUAL: Si hay una URL de imagen, la mete de fondo con un degradado oscuro encima
+                style={promo.imagen_url ? { backgroundImage: `linear-gradient(to bottom, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)), url(${promo.imagen_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in-95 duration-300 min-h-[180px]"
               >
                 <div>
                   <div className="flex justify-between items-start gap-4 mb-3">
