@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 
+// 🚀 RUTA ABSOLUTA CONFIGURADA CON TU SERVIDOR REAL DE RAILWAY
+const API_URL = 'https://mvp-backend-production-0f36.up.railway.app'; 
+
 const GestionPromociones = ({ onBack }) => {
-  const [promociones, setPromociones] = useState([]); // Lista conectada al backend
-  const [mostrarFormulario, setMostrarFormulario] = useState(false); // Estado para alternar vistas
+  const [promociones, setPromociones] = useState([]); 
+  const [mostrarFormulario, setMostrarFormulario] = useState(false); 
   const [cargando, setCargando] = useState(false);
   
-  // Estados para capturar los datos del formulario
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagenArchivo, setImagenArchivo] = useState(null); 
@@ -18,19 +20,20 @@ const GestionPromociones = ({ onBack }) => {
   useEffect(() => {
     const obtenerPromociones = async () => {
       try {
-        const response = await fetch('/api/promociones');
+        const response = await fetch(`${API_URL}/api/promociones`);
         if (response.ok) {
           const data = await response.json();
           setPromociones(data);
+        } else {
+          console.error("❌ El servidor no respondió un JSON válido.");
         }
       } catch (error) {
         console.error("❌ Error al conectar con la API de promociones:", error);
       }
     };
     obtenerPromociones();
-  }, [mostrarFormulario]); // Recarga el listado cada que regresamos del formulario
+  }, [mostrarFormulario]); 
 
-  // Helper para convertir el archivo del banner cargado a String Base64 largo
   const transformarBase64 = (archivo) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -60,22 +63,21 @@ const GestionPromociones = ({ onBack }) => {
     try {
       let bannerBase64 = null;
       if (imagenArchivo) {
-        bannerBase64 = await transformarBase64(imagenArchivo); // Convertimos el archivo real
+        bannerBase64 = await transformarBase64(imagenArchivo); 
       }
 
-      const response = await fetch('/api/promociones/crear', {
+      const response = await fetch(`${API_URL}/api/promociones/crear`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           titulo: titulo.toUpperCase(),
           descripcion,
-          imagen_url: bannerBase64, // Mandamos el string largo a la columna BLOB/Text de la DB
+          imagen_url: bannerBase64, 
           fecha_fin: fechaFin || null
         })
       });
 
       if (response.ok) {
-        // Limpiamos el formulario y cerramos la vista
         setTitulo('');
         setDescripcion('');
         setImagenArchivo(null);
@@ -83,7 +85,8 @@ const GestionPromociones = ({ onBack }) => {
         setFechaFin('');
         setMostrarFormulario(false);
       } else {
-        alert("No se pudo guardar la promoción en el servidor");
+        const errData = await response.json().catch(() => ({}));
+        alert(errData.error || "No se pudo guardar la promoción en el servidor");
       }
     } catch (error) {
       console.error("❌ Error en la petición de guardado:", error);
@@ -95,7 +98,6 @@ const GestionPromociones = ({ onBack }) => {
 
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Encabezado Dinámico con Diseño Consistente */}
       <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm">
         <h2 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
           {mostrarFormulario ? (
@@ -113,12 +115,10 @@ const GestionPromociones = ({ onBack }) => {
         </button>
       </div>
 
-      {/* VISTA A: FORMULARIO DE CREACIÓN */}
       {mostrarFormulario ? (
         <div className="max-w-2xl mx-auto bg-[#1e293b] p-6 md:p-8 rounded-3xl border border-gray-700/60 shadow-2xl animate-in slide-in-from-bottom-6 duration-300">
           <form onSubmit={handleCrearPromocion} className="space-y-6">
             
-            {/* INPUT: TÍTULO */}
             <div className="group">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
                 Título de la Promoción *
@@ -134,7 +134,6 @@ const GestionPromociones = ({ onBack }) => {
               />
             </div>
 
-            {/* INPUT: DESCRIPCIÓN */}
             <div className="group">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
                 Descripción de la Oferta *
@@ -150,7 +149,6 @@ const GestionPromociones = ({ onBack }) => {
               />
             </div>
 
-            {/* INPUT REAL: CARGAR BANNER / FOTO */}
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
                 Banner de la Promoción (Opcional)
@@ -173,7 +171,6 @@ const GestionPromociones = ({ onBack }) => {
                 </span>
               </div>
 
-              {/* Muestra miniatura del banner dentro del formulario antes de guardar */}
               {imagenPreview && (
                 <div className="mt-3 relative rounded-xl overflow-hidden border border-gray-700/50 max-h-[140px]">
                   <img src={imagenPreview} alt="Preview Banner" className="w-full h-full object-cover" />
@@ -191,7 +188,6 @@ const GestionPromociones = ({ onBack }) => {
               )}
             </div>
 
-            {/* INPUT: FECHA */}
             <div className="group">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
                 Fecha de Vencimiento (Opcional)
@@ -205,7 +201,6 @@ const GestionPromociones = ({ onBack }) => {
               />
             </div>
 
-            {/* BOTÓN SUBMIT */}
             <button 
               type="submit"
               disabled={cargando}
@@ -216,7 +211,6 @@ const GestionPromociones = ({ onBack }) => {
           </form>
         </div>
       ) : (
-        /* VISTA B: GRID PRINCIPAL CONNECTED */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div 
