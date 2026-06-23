@@ -17,8 +17,14 @@ const GestionPromociones = ({ onBack }) => {
   const [imagenPreview, setImagenPreview] = useState(''); 
   const [fechaFin, setFechaFin] = useState('');
 
+  // 🚀 NUEVOS ESTADOS DE CONTROL DE SEGMENTACIÓN (MERN FILTROS)
+  const [tipoFiltro, setTipoFiltro] = useState('todos'); 
+  const [limite, setLimite] = useState('10');
+  const [equipoId, setEquipoId] = useState('');
+  const [listaEquipos, setListaEquipos] = useState([]); // Almacena el catálogo de escuadras para el select
+
   // =========================================================================
-  // 🔄 EFECTO: OBTENER LAS PROMOCIONES REALES DESDE LA BASE DE DATOS
+  // 🔄 EFECTO: OBTENER LAS PROMOCIONES Y EL CATÁLOGO DE EQUIPOS
   // =========================================================================
   const obtenerPromociones = async () => {
     try {
@@ -34,8 +40,21 @@ const GestionPromociones = ({ onBack }) => {
     }
   };
 
+  const obtenerEquiposCatalogo = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/equipos`);
+      if (response.ok) {
+        const data = await response.json();
+        setListaEquipos(data);
+      }
+    } catch (error) {
+      console.error("❌ Error al jalar catálogo de escuadras:", error);
+    }
+  };
+
   useEffect(() => {
     obtenerPromociones();
+    obtenerEquiposCatalogo();
   }, [mostrarFormulario]); 
 
   // 🚀 FUNCIÓN: PRECARGA LOS DATOS ACTUALES E INICIA MODO EDICIÓN
@@ -56,6 +75,9 @@ const GestionPromociones = ({ onBack }) => {
     setImagenArchivo(null);
     setImagenPreview('');
     setFechaFin('');
+    setTipoFiltro('todos'); // Limpia criterios de segmentación al salir
+    setLimite('10');
+    setEquipoId('');
   };
 
   const transformarBase64 = (archivo) => {
@@ -76,7 +98,7 @@ const GestionPromociones = ({ onBack }) => {
   };
 
   // =========================================================================
-  // 🚀 ACCIÓN: ENVIAR PROMOCIÓN SELECCIONADA A LA RED DE JUGADORES
+  // 🚀 ACCIÓN: ENVIAR PROMOCIÓN SELECCIONADA CON CRITERIOS DE SEGMENTACIÓN
   // =========================================================================
   const handleEnviarAJugadores = async (id) => {
     if (!id) return;
@@ -85,7 +107,12 @@ const GestionPromociones = ({ onBack }) => {
     try {
       const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipoFiltro,
+          limite: tipoFiltro === 'top_asistencias' ? parseInt(limite, 10) : null,
+          equipoId: tipoFiltro === 'por_equipo' ? equipoId : null
+        })
       });
 
       const data = await response.json();
@@ -409,6 +436,58 @@ const GestionPromociones = ({ onBack }) => {
                       {promoSeleccionada.descripcion}
                     </p>
                   </div>
+
+                  {/* 🚀 NUEVA SECCIÓN DE SEGMENTACIÓN E INTELIGENCIA DE DIFUSIÓN */}
+                  <div className="bg-[#0f172a]/40 border border-gray-800 p-4 rounded-2xl space-y-3 mt-2">
+                    <h5 className="text-[10px] font-black uppercase tracking-widest text-yellow-500">🎯 Segmentación de Envío</h5>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] font-black text-gray-400 uppercase mb-1">Criterio de Filtro</label>
+                        <select 
+                          value={tipoFiltro} 
+                          onChange={(e) => setTipoFiltro(e.target.value)}
+                          className="w-full bg-[#1e293b] border border-gray-700 rounded-lg px-3 py-2 text-white text-xs font-bold outline-none focus:border-yellow-500 cursor-pointer"
+                        >
+                          <option value="todos">👥 ENVIAR A TODOS</option>
+                          <option value="top_asistencias">🏆 TOP ASISTENCIAS (PREMIO)</option>
+                          <option value="por_equipo">🏈 POR SQUAD ESPECÍFICO</option>
+                        </select>
+                      </div>
+
+                      {/* Render condicional: Input para límite de asistencias */}
+                      {tipoFiltro === 'top_asistencias' && (
+                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                          <label className="block text-[9px] font-black text-gray-400 uppercase mb-1">Cantidad de Atletas</label>
+                          <input 
+                            type="number" 
+                            min="1"
+                            value={limite}
+                            onChange={(e) => setLimite(e.target.value)}
+                            className="w-full bg-[#1e293b] border border-gray-700 rounded-lg px-3 py-2 text-white text-xs font-bold outline-none focus:border-yellow-500"
+                            placeholder="Ej. 10"
+                          />
+                        </div>
+                      )}
+
+                      {/* Render condicional: Select para filtrar por escuadras reales de la BD */}
+                      {tipoFiltro === 'por_equipo' && (
+                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                          <label className="block text-[9px] font-black text-gray-400 uppercase mb-1">Seleccionar Escuadra</label>
+                          <select 
+                            value={equipoId} 
+                            onChange={(e) => setEquipoId(e.target.value)}
+                            className="w-full bg-[#1e293b] border border-gray-700 rounded-lg px-3 py-2 text-white text-xs font-bold outline-none focus:border-yellow-500 cursor-pointer"
+                          >
+                            <option value="">Selecciona equipo...</option>
+                            {listaEquipos.map(e => (
+                              <option key={e.id} value={e.id}>{e.nombre_equipo.toUpperCase()}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* FOOTER DEL MODAL INTERACTIVO CON BOTÓN DE ENVÍO MASIVO INTEGRADO */}
@@ -420,13 +499,13 @@ const GestionPromociones = ({ onBack }) => {
                       className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-yellow-500 border border-gray-700 hover:border-gray-600 font-black uppercase text-xs rounded-xl tracking-wider transition-all shadow-md active:scale-95 disabled:opacity-50"
                     >
                       ✏️ Editar Info
-                  </button>
+                    </button>
                     <button 
                       onClick={() => handleEnviarAJugadores(promoSeleccionada.id)}
-                      disabled={enviando}
+                      disabled={enviando || (tipoFiltro === 'por_equipo' && !equipoId)}
                       className="px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:border-blue-600/50 font-black uppercase text-xs rounded-xl tracking-wider transition-all shadow-md active:scale-95 disabled:opacity-50"
                     >
-                      {enviando ? '⏳ Enviando...' : '📢 Enviar a Jugadores'}
+                      {enviando ? '⏳ Segmentando...' : '📢 Enviar a Jugadores'}
                     </button>
                   </div>
                   <button
