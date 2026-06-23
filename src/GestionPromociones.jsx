@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 
-// 🚀 RUTA ABSOLUTA CONFIGURADA CON TU SERVIDOR REAL DE RAILWAY
+// RUTA ABSOLUTA CONFIGURADA CON TU SERVIDOR REAL DE RAILWAY
 const API_URL = 'https://mvp-backend-production-0f36.up.railway.app'; 
 
 const GestionPromociones = ({ onBack }) => {
   const [promociones, setPromociones] = useState([]); 
   const [mostrarFormulario, setMostrarFormulario] = useState(false); 
+  const [promoSeleccionada, setPromoSeleccionada] = useState(null); // 🚀 NUEVO ESTADO: Almacena la promo cliqueada para ver el detalle
   const [cargando, setCargando] = useState(false);
   
   const [titulo, setTitulo] = useState('');
@@ -51,9 +52,6 @@ const GestionPromociones = ({ onBack }) => {
     }
   };
 
-  // =========================================================================
-  // 🚀 ENVÍO DE DATOS POST AL BACKEND DE EXPRESS
-  // =========================================================================
   const handleCrearPromocion = async (e) => {
     e.preventDefault();
     
@@ -97,7 +95,9 @@ const GestionPromociones = ({ onBack }) => {
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 relative">
+      
+      {/* HEADER PRINCIPAL */}
       <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm">
         <h2 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
           {mostrarFormulario ? (
@@ -115,6 +115,7 @@ const GestionPromociones = ({ onBack }) => {
         </button>
       </div>
 
+      {/* VISTA A: FORMULARIO DE CREACIÓN */}
       {mostrarFormulario ? (
         <div className="max-w-2xl mx-auto bg-[#1e293b] p-6 md:p-8 rounded-3xl border border-gray-700/60 shadow-2xl animate-in slide-in-from-bottom-6 duration-300">
           <form onSubmit={handleCrearPromocion} className="space-y-6">
@@ -144,7 +145,7 @@ const GestionPromociones = ({ onBack }) => {
                 disabled={cargando}
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Indica de forma clara los beneficios (ej. Válido para los primeros 10 atletas)..."
+                placeholder="Indica de forma clara los benefits..."
                 className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600 resize-none leading-relaxed disabled:opacity-50"
               />
             </div>
@@ -211,6 +212,7 @@ const GestionPromociones = ({ onBack }) => {
           </form>
         </div>
       ) : (
+        /* VISTA B: GRID DE TARJETAS CLIQUEABLES */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div 
@@ -231,8 +233,9 @@ const GestionPromociones = ({ onBack }) => {
             promociones.map((promo) => (
               <div 
                 key={promo.id} 
+                onClick={() => setPromoSeleccionada(promo)} // 🚀 HACE CLIQUEABLE LA TARJETA
                 style={promo.imagen_url ? { backgroundImage: `linear-gradient(to bottom, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)), url(${promo.imagen_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in-95 duration-300 min-h-[180px]"
+                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-yellow-500/60 cursor-pointer hover:scale-[1.01] transition-all duration-200 min-h-[180px]"
               >
                 <div>
                   <div className="flex justify-between items-start gap-4 mb-3">
@@ -245,16 +248,70 @@ const GestionPromociones = ({ onBack }) => {
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-300 text-sm leading-relaxed font-medium">
+                  <p className="text-gray-300 text-sm leading-relaxed font-medium line-clamp-3">
                     {promo.descripcion}
                   </p>
                 </div>
               </div>
             ))
           )}
-
         </div>
       )}
+
+      {/* =========================================================================
+          🚀 VISTA C: MODAL DETALLADO DE INFORMACIÓN COMPLETA
+         ========================================================================= */}
+      {promoSeleccionada && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#1e293b] border border-gray-700 w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
+            
+            {/* Banner superior expandido si cuenta con imagen */}
+            {promoSeleccionada.imagen_url ? (
+              <div className="h-48 relative w-full shrink-0">
+                <img src={promoSeleccionada.imagen_url} alt="Promo Banner" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-[#1e293b]/40 to-black/30" />
+              </div>
+            ) : (
+              <div className="p-3 bg-gradient-to-r from-yellow-600/20 to-transparent border-b border-gray-800 shrink-0" />
+            )}
+
+            {/* Cuerpo del Modal */}
+            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h3 className="text-xl font-black text-yellow-500 uppercase italic tracking-tight leading-tight">
+                  {promoSeleccionada.titulo}
+                </h3>
+                {promoSeleccionada.fecha_fin && (
+                  <span className="self-start sm:self-center shrink-0 text-[10px] bg-red-950 text-red-400 border border-red-900/60 px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                    ⏰ EXPIRA: {promoSeleccionada.fecha_fin.split('T')[0]}
+                  </span>
+                )}
+              </div>
+
+              <div className="border-t border-gray-800 my-2" />
+
+              <div>
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Términos y Detalles de la Oferta:</h4>
+                <p className="text-gray-200 text-sm leading-relaxed font-medium bg-[#0f172a]/50 p-4 rounded-xl border border-gray-800 whitespace-pre-line">
+                  {promoSeleccionada.descripcion}
+                </p>
+              </div>
+            </div>
+
+            {/* Footer con Botón de Cierre */}
+            <div className="p-4 bg-[#0f172a]/40 border-t border-gray-800/60 flex justify-end shrink-0">
+              <button
+                onClick={() => setPromoSeleccionada(null)}
+                className="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+              >
+                Entendido
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
