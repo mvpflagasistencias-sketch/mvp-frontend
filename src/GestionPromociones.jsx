@@ -1,47 +1,96 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const GestionPromociones = ({ onBack }) => {
-  const [promociones, setPromociones] = useState([]); // Tu lista de promos
+  const [promociones, setPromociones] = useState([]); // Lista conectada al backend
   const [mostrarFormulario, setMostrarFormulario] = useState(false); // Estado para alternar vistas
+  const [cargando, setCargando] = useState(false);
   
-  // Estados para capturar los datos del formulario (Cargador de Banner Real)
+  // Estados para capturar los datos del formulario
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [imagenArchivo, setImagenArchivo] = useState(null); // 🚀 Almacena el archivo físico seleccionado
-  const [imagenPreview, setImagenPreview] = useState(''); // 🚀 Almacena la URL en memoria para pintar la vista previa
+  const [imagenArchivo, setImagenArchivo] = useState(null); 
+  const [imagenPreview, setImagenPreview] = useState(''); 
   const [fechaFin, setFechaFin] = useState('');
+
+  // =========================================================================
+  // 🔄 EFECTO: OBTENER LAS PROMOCIONES REALES DESDE LA BASE DE DATOS
+  // =========================================================================
+  useEffect(() => {
+    const obtenerPromociones = async () => {
+      try {
+        const response = await fetch('/api/promociones');
+        if (response.ok) {
+          const data = await response.json();
+          setPromociones(data);
+        }
+      } catch (error) {
+        console.error("❌ Error al conectar con la API de promociones:", error);
+      }
+    };
+    obtenerPromociones();
+  }, [mostrarFormulario]); // Recarga el listado cada que regresamos del formulario
+
+  // Helper para convertir el archivo del banner cargado a String Base64 largo
+  const transformarBase64 = (archivo) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(archivo);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   const handleCambiarImagen = (e) => {
     const archivo = e.target.files[0];
     if (archivo) {
-      setImagenArchivo(archivo); // Guardamos el archivo para cuando lo mandes al backend vía FormData
-      setImagenPreview(URL.createObjectURL(archivo)); // Genera un enlace temporal local para previsualizarlo
+      setImagenArchivo(archivo); 
+      setImagenPreview(URL.createObjectURL(archivo)); 
     }
   };
 
-  const handleCrearPromocion = (e) => {
+  // =========================================================================
+  // 🚀 ENVÍO DE DATOS POST AL BACKEND DE EXPRESS
+  // =========================================================================
+  const handleCrearPromocion = async (e) => {
     e.preventDefault();
     
     if (!titulo.trim() || !descripcion.trim()) return;
+    setCargando(true);
 
-    const nuevaPromo = {
-      id: Date.now(),
-      titulo: titulo.toUpperCase(),
-      descripcion,
-      // Usamos la preview local por ahora para el render dinámico del front
-      imagen_url: imagenPreview || null, 
-      fecha_fin: fechaFin || null
-    };
+    try {
+      let bannerBase64 = null;
+      if (imagenArchivo) {
+        bannerBase64 = await transformarBase64(imagenArchivo); // Convertimos el archivo real
+      }
 
-    setPromociones([nuevaPromo, ...promociones]);
-    
-    // Limpiamos el formulario y regresamos al listado
-    setTitulo('');
-    setDescripcion('');
-    setImagenArchivo(null);
-    setImagenPreview('');
-    setFechaFin('');
-    setMostrarFormulario(false);
+      const response = await fetch('/api/promociones/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: titulo.toUpperCase(),
+          descripcion,
+          imagen_url: bannerBase64, // Mandamos el string largo a la columna BLOB/Text de la DB
+          fecha_fin: fechaFin || null
+        })
+      });
+
+      if (response.ok) {
+        // Limpiamos el formulario y cerramos la vista
+        setTitulo('');
+        setDescripcion('');
+        setImagenArchivo(null);
+        setImagenPreview('');
+        setFechaFin('');
+        setMostrarFormulario(false);
+      } else {
+        alert("No se pudo guardar la promoción en el servidor");
+      }
+    } catch (error) {
+      console.error("❌ Error en la petición de guardado:", error);
+      alert("Error de red al intentar conectar con el servidor backend");
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -57,7 +106,8 @@ const GestionPromociones = ({ onBack }) => {
         </h2>
         <button 
           onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
-          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all border border-gray-700 hover:border-gray-600 shadow-md flex items-center gap-2"
+          disabled={cargando}
+          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all border border-gray-700 hover:border-gray-600 shadow-md flex items-center gap-2 disabled:opacity-50"
         >
           {mostrarFormulario ? '← Cancelar' : '← Volver'}
         </button>
@@ -76,10 +126,11 @@ const GestionPromociones = ({ onBack }) => {
               <input 
                 type="text" 
                 required
+                disabled={cargando}
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
                 placeholder="EJ. MEGAPACK: INSCRIPCIÓN GRATIS EN JUNIO"
-                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-bold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all uppercase placeholder-gray-600"
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-bold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all uppercase placeholder-gray-600 disabled:opacity-50"
               />
             </div>
 
@@ -91,14 +142,15 @@ const GestionPromociones = ({ onBack }) => {
               <textarea 
                 required
                 rows="4"
+                disabled={cargando}
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Indica de forma clara los beneficios (ej. Válido para los primeros 10 atletas)..."
-                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600 resize-none leading-relaxed"
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600 resize-none leading-relaxed disabled:opacity-50"
               />
             </div>
 
-            {/* INPUT REAL: CARGAR BANNER / FOTO (🚀 MODIFICADO CON FORMATO DE ARCHIVO FÍSICO) */}
+            {/* INPUT REAL: CARGAR BANNER / FOTO */}
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
                 Banner de la Promoción (Opcional)
@@ -110,8 +162,9 @@ const GestionPromociones = ({ onBack }) => {
                   <input 
                     type="file" 
                     accept="image/*"
+                    disabled={cargando}
                     onChange={handleCambiarImagen}
-                    className="hidden" // Escondemos el input feo nativo de HTML
+                    className="hidden" 
                   />
                 </label>
                 
@@ -127,6 +180,7 @@ const GestionPromociones = ({ onBack }) => {
                   <div className="absolute inset-0 bg-black/40 p-2 flex items-start justify-end">
                     <button 
                       type="button"
+                      disabled={cargando}
                       onClick={() => { setImagenArchivo(null); setImagenPreview(''); }}
                       className="bg-red-600 hover:bg-red-500 text-white p-1 rounded-md text-[10px] font-black uppercase tracking-wider px-2"
                     >
@@ -144,23 +198,25 @@ const GestionPromociones = ({ onBack }) => {
               </label>
               <input 
                 type="date" 
+                disabled={cargando}
                 value={fechaFin}
                 onChange={(e) => setFechaFin(e.target.value)}
-                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all appearance-none cursor-pointer text-gray-300"
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all appearance-none cursor-pointer text-gray-300 disabled:opacity-50"
               />
             </div>
 
             {/* BOTÓN SUBMIT */}
             <button 
               type="submit"
-              className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-yellow-900/30 mt-4 active:scale-[0.99]"
+              disabled={cargando}
+              className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-yellow-900/30 mt-4 active:scale-[0.99] disabled:opacity-50"
             >
-              🚀 Publicar Promoción Activa
+              {cargando ? '⏳ Publicando en base de datos...' : '🚀 Publicar Promoción Activa'}
             </button>
           </form>
         </div>
       ) : (
-        /* VISTA B: GRID PRINCIPAL */
+        /* VISTA B: GRID PRINCIPAL CONNECTED */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div 
@@ -191,7 +247,7 @@ const GestionPromociones = ({ onBack }) => {
                     </h3>
                     {promo.fecha_fin && (
                       <span className="shrink-0 text-[9px] bg-red-950/60 text-red-400 border border-red-900/50 px-2.5 py-1 rounded-lg font-black uppercase tracking-wider">
-                        ⏰ Vence: {promo.fecha_fin}
+                        ⏰ Vence: {promo.fecha_fin.split('T')[0]} 
                       </span>
                     )}
                   </div>
