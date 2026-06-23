@@ -9,6 +9,7 @@ const GestionPromociones = ({ onBack }) => {
   const [promoSeleccionada, setPromoSeleccionada] = useState(null); // 🚀 ALMACENA LA PROMO SELECCIONADA
   const [editando, setEditando] = useState(false); // 🚀 NUEVO ESTADO: CONTROLA MODO LECTURA O EDICIÓN EN EL MODAL
   const [cargando, setCargando] = useState(false);
+  const [enviando, setEnviando] = useState(false); // 🚀 NUEVO ESTADO: CONTROL DEL PROCESO DE DIFUSIÓN MASIVA
   
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -71,6 +72,35 @@ const GestionPromociones = ({ onBack }) => {
     if (archivo) {
       setImagenArchivo(archivo); 
       setImagenPreview(URL.createObjectURL(archivo)); 
+    }
+  };
+
+  // =========================================================================
+  // 🚀 ACCIÓN: ENVIAR PROMOCIÓN SELECCIONADA A LA RED DE JUGADORES
+  // =========================================================================
+  const handleEnviarAJugadores = async (id) => {
+    if (!id) return;
+    setEnviando(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message || "¡Promoción difundida con éxito!");
+        cerrarModal();
+      } else {
+        alert(data.error || "No se pudo completar el envío de la promoción");
+      }
+    } catch (error) {
+      console.error("❌ Error en la petición de envío masivo:", error);
+      alert("Error de red al intentar despachar la promoción.");
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -204,9 +234,7 @@ const GestionPromociones = ({ onBack }) => {
                   />
                 </label>
                 
-                <span className="text-xs text-gray-500 truncate max-w-xs font-medium">
-                  {imagenArchivo ? imagenArchivo.name : "Ningún banner seleccionado"}
-                </span>
+                <span className="text-xs text-gray-500 truncate max-w-xs font-medium">{imagenArchivo ? imagenArchivo.name : "Ningún banner seleccionado"}</span>
               </div>
 
               {imagenPreview && (
@@ -383,16 +411,28 @@ const GestionPromociones = ({ onBack }) => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-[#0f172a]/40 border-t border-gray-800/60 flex justify-between items-center shrink-0">
-                  <button 
-                    onClick={iniciarEdicion}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-yellow-500 border border-gray-700 hover:border-gray-600 font-black uppercase text-xs rounded-xl tracking-wider transition-all shadow-md active:scale-95"
-                  >
-                    ✏️ Editar Info
+                {/* FOOTER DEL MODAL INTERACTIVO CON BOTÓN DE ENVÍO MASIVO INTEGRADO */}
+                <div className="p-4 bg-[#0f172a]/40 border-t border-gray-800/60 flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={iniciarEdicion}
+                      disabled={enviando}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-yellow-500 border border-gray-700 hover:border-gray-600 font-black uppercase text-xs rounded-xl tracking-wider transition-all shadow-md active:scale-95 disabled:opacity-50"
+                    >
+                      ✏️ Editar Info
                   </button>
+                    <button 
+                      onClick={() => handleEnviarAJugadores(promoSeleccionada.id)}
+                      disabled={enviando}
+                      className="px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:border-blue-600/50 font-black uppercase text-xs rounded-xl tracking-wider transition-all shadow-md active:scale-95 disabled:opacity-50"
+                    >
+                      {enviando ? '⏳ Enviando...' : '📢 Enviar a Jugadores'}
+                    </button>
+                  </div>
                   <button
                     onClick={cerrarModal}
-                    className="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+                    disabled={enviando}
+                    className="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50"
                   >
                     Entendido
                   </button>
