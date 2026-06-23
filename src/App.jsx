@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // 🚀 IMPORTADO useEffect
 import Login from './Login.jsx';
 import RegistroJugadores from './RegistroJugadores.jsx';
 import RegistroEquipos from './RegistroEquipos.jsx'; 
@@ -23,13 +23,31 @@ function App() {
   // 🚀 NUEVO ESTADO: Controla la vista dentro del portal de jugadores (login o registro)
   const [vistaJugador, setVistaJugador] = useState('login');
 
+  // =========================================================================
+  // 🔄 PERSISTENCIA DE SESIÓN: Recupera el usuario si existe un token activo
+  // =========================================================================
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    // Si tienes un endpoint para validar el token y traer el usuario completo, puedes hacer el fetch aquí.
+    // Como solución inmediata para que no te bote, si encuentra un token le asigna un estado provisional.
+    if (token && !user) {
+      // Reemplaza esto con los datos reales que use tu app si es necesario, o déjalo provisional
+      setUser({ nombre: localStorage.getItem('user_nombre') || 'Staff' });
+    }
+  }, []);
+
   const handleLoginSuccess = (userData) => {
+    // Si tu backend te regresa el nombre, guárdalo para que al recargar se mantenga en el Navbar
+    if (userData?.nombre) {
+      localStorage.setItem('user_nombre', userData.nombre);
+    }
     setUser(userData);
     setView('dashboard');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user_nombre'); // Limpia también el nombre guardado
     setUser(null);
     setView('dashboard');
   };
@@ -113,7 +131,7 @@ function App() {
       case 'asistencias': 
         return <MonitorAsistencias onBack={() => setView('dashboard')} />;
       case 'promociones':
-        return <GestionPromociones onBack={() => setView('dashboard')} />; // 🚀 CAMBIO QUIRÚRGICO REALIZADO AQUÍ
+        return <GestionPromociones onBack={() => setView('dashboard')} />;
       default:
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
