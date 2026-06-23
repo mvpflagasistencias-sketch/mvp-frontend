@@ -4,158 +4,149 @@ const GestionPromociones = ({ onBack }) => {
   const [promociones, setPromociones] = useState([]); // Tu lista de promos
   const [mostrarFormulario, setMostrarFormulario] = useState(false); // Estado para alternar vistas
   
-  // Estados para capturar los datos del formulario
+  // Estados para capturar los datos del formulario (Sin código de cupón)
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [codigoCupon, setCodigoCupon] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
   const handleCrearPromocion = (e) => {
     e.preventDefault();
     
-    // Validamos lo básico por ahora
-    if (!titulo || !descripcion) return;
+    if (!titulo.trim() || !descripcion.trim()) return;
 
     const nuevaPromo = {
-      id: Date.now(), // ID temporal local
-      titulo,
+      id: Date.now(),
+      titulo: titulo.toUpperCase(), // Forzamos mayúsculas dinámicas para el estilo deportivo
       descripcion,
-      codigo_cupon: codigoCupon || null,
       fecha_fin: fechaFin || null
     };
 
-    // Agregamos la promo localmente (Temporal, luego lo conectamos a tu API de Railway)
     setPromociones([nuevaPromo, ...promociones]);
     
-    // Limpiamos el formulario y regresamos a la vista del listado
+    // Limpiamos el formulario y regresamos al listado
     setTitulo('');
     setDescripcion('');
-    setCodigoCupon('');
     setFechaFin('');
     setMostrarFormulario(false);
   };
 
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Encabezado Dinámico */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+      {/* Encabezado Dinámico con Diseño Consistente */}
+      <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm">
+        <h2 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
           {mostrarFormulario ? (
-            <>Nueva <span className="text-yellow-500">Promoción</span></>
+            <>✍️ Nueva <span className="text-yellow-500">Promoción</span></>
           ) : (
-            <>Gestión de <span className="text-yellow-500">Promociones</span></>
+            <>🏷️ Gestión de <span className="text-yellow-500">Promociones</span></>
           )}
         </h2>
         <button 
           onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
-          className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold uppercase text-xs transition-all shadow-md"
+          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all border border-gray-700 hover:border-gray-600 shadow-md flex items-center gap-2"
         >
           {mostrarFormulario ? '← Cancelar' : '← Volver'}
         </button>
       </div>
 
-      {/* VISTA A: FORMULARIO DE CREACIÓN */}
+      {/* VISTA A: FORMULARIO DE CREACIÓN MEJORADO */}
       {mostrarFormulario ? (
-        <div className="max-w-2xl bg-[#1e293b] p-8 rounded-3xl border border-gray-700 shadow-2xl animate-in slide-in-from-bottom duration-300">
+        <div className="max-w-2xl mx-auto bg-[#1e293b] p-6 md:p-8 rounded-3xl border border-gray-700/60 shadow-2xl animate-in slide-in-from-bottom-6 duration-300">
           <form onSubmit={handleCrearPromocion} className="space-y-6">
-            <div>
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Título de la Promoción *</label>
+            
+            {/* INPUT: TÍTULO */}
+            <div className="group">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
+                Título de la Promoción *
+              </label>
               <input 
                 type="text" 
                 required
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
-                placeholder="Ej. 20% DE DESCUENTO EN INSCRIPCIÓN"
-                className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 transition-all uppercase"
+                placeholder="EJ. MEGAPACK: INSCRIPCIÓN GRATIS EN JUNIO"
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-bold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all uppercase placeholder-gray-600"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Descripción de la Oferta *</label>
+            {/* INPUT: DESCRIPCIÓN */}
+            <div className="group">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
+                Descripción de la Oferta *
+              </label>
               <textarea 
                 required
-                rows="3"
+                rows="4"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Describe los términos, qué incluye la promoción o el beneficio para el atleta..."
-                className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 transition-all"
+                placeholder="Indica de forma clara los beneficios (ej. Válido para los primeros 10 atletas en registrarse esta semana)..."
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600 resize-none leading-relaxed"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Código de Cupón (Opcional)</label>
-                <input 
-                  type="text" 
-                  value={codigoCupon}
-                  onChange={(e) => setCodigoCupon(e.target.value)}
-                  placeholder="Ej. FLAG20"
-                  className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-black focus:outline-none focus:border-yellow-500 transition-all uppercase text-yellow-500 tracking-widest"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Fecha de Vencimiento (Opcional)</label>
-                <input 
-                  type="date" 
-                  value={fechaFin}
-                  onChange={(e) => setFechaFin(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 transition-all"
-                />
-              </div>
+            {/* INPUT: FECHA (Ocupando todo el ancho disponible con mejor diseño) */}
+            <div className="group">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
+                Fecha de Vencimiento (Opcional)
+              </label>
+              <input 
+                type="date" 
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all appearance-none cursor-pointer text-gray-300"
+              />
             </div>
 
+            {/* BOTÓN SUBMIT DE ALTO IMPACTO */}
             <button 
               type="submit"
-              className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-yellow-900/20 mt-4"
+              className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-yellow-900/30 mt-4 active:scale-[0.99]"
             >
-              Publicar Promoción Activa
+              🚀 Publicar Promoción Activa
             </button>
           </form>
         </div>
       ) : (
-        /* VISTA B: GRID PRINCIPAL (LISTADO + BOTÓN AGREGAR) */
+        /* VISTA B: GRID PRINCIPAL OPTIMIZADO */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Tarjeta interactiva para abrir el formulario */}
           <div 
-            onClick={() => setMostrarFormulario(true)} // 🚀 AHORA SÍ CAMBIA EL ESTADO AL DARLE CLIC
-            className="bg-[#1e293b] p-8 rounded-3xl border border-yellow-500/30 flex flex-col items-center justify-center border-dashed cursor-pointer hover:border-yellow-500 hover:bg-[#243249] transition-all group min-h-[200px]"
+            onClick={() => setMostrarFormulario(true)}
+            className="bg-[#1e293b] p-8 rounded-3xl border border-yellow-500/20 flex flex-col items-center justify-center border-dashed cursor-pointer hover:border-yellow-500 hover:bg-[#202c41] transition-all group min-h-[180px] shadow-md active:scale-[0.99]"
           >
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">➕</div>
-            <p className="text-gray-400 group-hover:text-white font-bold uppercase text-sm transition-colors tracking-wide">
+            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">⚡</div>
+            <p className="text-gray-400 group-hover:text-yellow-500 font-black uppercase text-xs tracking-wider transition-colors">
               Crear Nueva Promoción
             </p>
           </div>
 
           {/* Listado dinámico de promociones creadas */}
           {promociones.length === 0 ? (
-            <div className="flex items-center justify-center bg-[#1e293b]/30 border border-gray-800 rounded-3xl text-center p-8 text-gray-500 italic min-h-[200px]">
+            <div className="flex items-center justify-center bg-[#1e293b]/20 border border-gray-800/80 rounded-3xl text-center p-8 text-gray-500 italic font-medium min-h-[180px]">
               No hay promociones activas en este momento.
             </div>
           ) : (
             promociones.map((promo) => (
               <div 
                 key={promo.id} 
-                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in duration-300"
+                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in-95 duration-300"
               >
                 <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight text-yellow-500 italic">{promo.titulo}</h3>
+                  <div className="flex justify-between items-start gap-4 mb-3">
+                    <h3 className="text-base font-black text-yellow-500 uppercase tracking-tight italic leading-snug">
+                      {promo.titulo}
+                    </h3>
                     {promo.fecha_fin && (
-                      <span className="text-[9px] bg-red-900/40 text-red-400 border border-red-900/60 px-2 py-0.5 rounded-md font-bold uppercase">
-                        Expira: {promo.fecha_fin}
+                      <span className="shrink-0 text-[9px] bg-red-950/60 text-red-400 border border-red-900/50 px-2.5 py-1 rounded-lg font-black uppercase tracking-wider">
+                        ⏰ Vence: {promo.fecha_fin}
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-300 text-sm leading-relaxed mb-4">{promo.descripcion}</p>
+                  <p className="text-gray-300 text-sm leading-relaxed font-medium">
+                    {promo.descripcion}
+                  </p>
                 </div>
-                {promo.codigo_cupon && (
-                  <div className="bg-[#0f172a] border border-gray-800 px-4 py-2 rounded-xl flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">Código de uso:</span>
-                    <span className="text-sm font-black text-white tracking-widest uppercase bg-yellow-600/10 border border-yellow-600/20 px-3 py-1 rounded-lg">{promo.codigo_cupon}</span>
-                  </div>
-                )}
               </div>
             ))
           )}
