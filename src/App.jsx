@@ -23,25 +23,26 @@ function App() {
   // 🚀 NUEVO ESTADO: Controla la vista dentro del portal de jugadores (login o registro)
   const [vistaJugador, setVistaJugador] = useState('login');
 
-  // =========================================================================
-  // 🔄 PERSISTENCIA DE SESIÓN: Recupera el usuario si existe un token activo
+ // =========================================================================
+  // 🔄 PERSISTENCIA DE SESIÓN ACTUALIZADA: Basada en el nombre guardado
   // =========================================================================
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    // Si tienes un endpoint para validar el token y traer el usuario completo, puedes hacer el fetch aquí.
-    // Como solución inmediata para que no te bote, si encuentra un token le asigna un estado provisional.
-    if (token && !user) {
-      // Reemplaza esto con los datos reales que use tu app si es necesario, o déjalo provisional
-      setUser({ nombre: localStorage.getItem('user_nombre') || 'Staff' });
+    const nombreGuardado = localStorage.getItem('user_nombre');
+    
+    // Si al recargar encontramos que ya había un usuario logueado con éxito
+    if (nombreGuardado && !user) {
+      setUser({ nombre: nombreGuardado }); // Restauramos el estado del usuario automáticamente
     }
   }, []);
 
   const handleLoginSuccess = (userData) => {
-    // Si tu backend te regresa el nombre, guárdalo para que al recargar se mantenga en el Navbar
+    // Forzamos el guardado en el navegador para que no se borre con F5
     if (userData?.nombre) {
       localStorage.setItem('user_nombre', userData.nombre);
+    } else {
+      localStorage.setItem('user_nombre', 'JESUS'); // Respaldo por si viene plano
     }
-    setUser(userData);
+    setUser(userData || { nombre: 'JESUS' });
     setView('dashboard');
   };
 
