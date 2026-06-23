@@ -5,6 +5,8 @@ import RegistroEquipos from './RegistroEquipos.jsx';
 import GestionJugadores from './GestionJugadores.jsx';
 import GestionStaff from './GestionStaff.jsx';
 import MonitorAsistencias from './MonitorAsistencias.jsx'; 
+import CardPromociones from './CardPromociones.jsx'; // 🚀 IMPORTADO DE FORMA MODULAR
+// import GestionPromociones from './GestionPromociones.jsx'; // Descomenta cuando crees el archivo
 
 // 👈 COMENTADO QUIRÚRGICAMENTE: Evita que Vite truene al no encontrar los archivos en esta carpeta
 // import LoginJugador from './LoginJugador.jsx';
@@ -110,6 +112,8 @@ function App() {
         return <GestionStaff onBack={() => setView('dashboard')} />;
       case 'asistencias': 
         return <MonitorAsistencias onBack={() => setView('dashboard')} />;
+      case 'promociones':
+        return <div className="text-white p-10 text-center">Módulo de Promociones en desarrollo...</div>;
       default:
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
@@ -152,6 +156,9 @@ function App() {
               <p className="text-gray-400 text-sm mb-6">Gestión de accesos y roles.</p>
               <button onClick={() => setView('staff')} className="w-full bg-orange-600 py-3 rounded-xl font-bold">Gestionar</button>
             </div>
+
+            {/* PROMOCIONES */}
+            <CardPromociones alGestionar={() => setView('promociones')} />
           </div>
         );
     }
