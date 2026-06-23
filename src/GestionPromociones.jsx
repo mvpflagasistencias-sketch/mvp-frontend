@@ -4,11 +4,20 @@ const GestionPromociones = ({ onBack }) => {
   const [promociones, setPromociones] = useState([]); // Tu lista de promos
   const [mostrarFormulario, setMostrarFormulario] = useState(false); // Estado para alternar vistas
   
-  // Estados para capturar los datos del formulario (Sin código de cupón)
+  // Estados para capturar los datos del formulario (Cargador de Banner Real)
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [imagenUrl, setImagenUrl] = useState(''); // 🚀 NUEVO ESTADO: Imagen URL (Opcional)
+  const [imagenArchivo, setImagenArchivo] = useState(null); // 🚀 Almacena el archivo físico seleccionado
+  const [imagenPreview, setImagenPreview] = useState(''); // 🚀 Almacena la URL en memoria para pintar la vista previa
   const [fechaFin, setFechaFin] = useState('');
+
+  const handleCambiarImagen = (e) => {
+    const archivo = e.target.files[0];
+    if (archivo) {
+      setImagenArchivo(archivo); // Guardamos el archivo para cuando lo mandes al backend vía FormData
+      setImagenPreview(URL.createObjectURL(archivo)); // Genera un enlace temporal local para previsualizarlo
+    }
+  };
 
   const handleCrearPromocion = (e) => {
     e.preventDefault();
@@ -17,9 +26,10 @@ const GestionPromociones = ({ onBack }) => {
 
     const nuevaPromo = {
       id: Date.now(),
-      titulo: titulo.toUpperCase(), // Forzamos mayúsculas dinámicas para el estilo deportivo
+      titulo: titulo.toUpperCase(),
       descripcion,
-      imagen_url: imagenUrl.trim() || null, // 🚀 SE AGREGA AL OBJETO DE LA PROMO
+      // Usamos la preview local por ahora para el render dinámico del front
+      imagen_url: imagenPreview || null, 
       fecha_fin: fechaFin || null
     };
 
@@ -28,7 +38,8 @@ const GestionPromociones = ({ onBack }) => {
     // Limpiamos el formulario y regresamos al listado
     setTitulo('');
     setDescripcion('');
-    setImagenUrl(''); // 🚀 LIMPIAR INPUT
+    setImagenArchivo(null);
+    setImagenPreview('');
     setFechaFin('');
     setMostrarFormulario(false);
   };
@@ -52,7 +63,7 @@ const GestionPromociones = ({ onBack }) => {
         </button>
       </div>
 
-      {/* VISTA A: FORMULARIO DE CREACIÓN MEJORADO */}
+      {/* VISTA A: FORMULARIO DE CREACIÓN */}
       {mostrarFormulario ? (
         <div className="max-w-2xl mx-auto bg-[#1e293b] p-6 md:p-8 rounded-3xl border border-gray-700/60 shadow-2xl animate-in slide-in-from-bottom-6 duration-300">
           <form onSubmit={handleCrearPromocion} className="space-y-6">
@@ -82,26 +93,51 @@ const GestionPromociones = ({ onBack }) => {
                 rows="4"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Indica de forma clara los beneficios (ej. Válido para los primeros 10 atletas en registrarse esta semana)..."
+                placeholder="Indica de forma clara los beneficios (ej. Válido para los primeros 10 atletas)..."
                 className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600 resize-none leading-relaxed"
               />
             </div>
 
-            {/* INPUT: URL DE LA IMAGEN (🚀 NUEVO INPUT AÑADIDO) */}
-            <div className="group">
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
-                URL de la Imagen (Opcional)
+            {/* INPUT REAL: CARGAR BANNER / FOTO (🚀 MODIFICADO CON FORMATO DE ARCHIVO FÍSICO) */}
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                Banner de la Promoción (Opcional)
               </label>
-              <input 
-                type="url" 
-                value={imagenUrl}
-                onChange={(e) => setImagenUrl(e.target.value)}
-                placeholder="https://ejemplo.com/foto-promocion.jpg"
-                className="w-full bg-[#0f172a] border border-gray-700/80 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 transition-all placeholder-gray-600"
-              />
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#0f172a] border border-gray-700/80 rounded-xl p-4">
+                <label className="shrink-0 cursor-pointer bg-slate-800 hover:bg-slate-700 border border-gray-700 text-white font-bold uppercase text-[10px] tracking-wider px-4 py-2.5 rounded-lg transition-all active:scale-95">
+                  📁 Seleccionar Archivo
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleCambiarImagen}
+                    className="hidden" // Escondemos el input feo nativo de HTML
+                  />
+                </label>
+                
+                <span className="text-xs text-gray-500 truncate max-w-xs font-medium">
+                  {imagenArchivo ? imagenArchivo.name : "Ningún banner seleccionado"}
+                </span>
+              </div>
+
+              {/* Muestra miniatura del banner dentro del formulario antes de guardar */}
+              {imagenPreview && (
+                <div className="mt-3 relative rounded-xl overflow-hidden border border-gray-700/50 max-h-[140px]">
+                  <img src={imagenPreview} alt="Preview Banner" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 p-2 flex items-start justify-end">
+                    <button 
+                      type="button"
+                      onClick={() => { setImagenArchivo(null); setImagenPreview(''); }}
+                      className="bg-red-600 hover:bg-red-500 text-white p-1 rounded-md text-[10px] font-black uppercase tracking-wider px-2"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* INPUT: FECHA (Ocupando todo el ancho disponible con mejor diseño) */}
+            {/* INPUT: FECHA */}
             <div className="group">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 group-focus-within:text-yellow-500 mb-2 transition-colors">
                 Fecha de Vencimiento (Opcional)
@@ -114,7 +150,7 @@ const GestionPromociones = ({ onBack }) => {
               />
             </div>
 
-            {/* BOTÓN SUBMIT DE ALTO IMPACTO */}
+            {/* BOTÓN SUBMIT */}
             <button 
               type="submit"
               className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-yellow-900/30 mt-4 active:scale-[0.99]"
@@ -124,10 +160,9 @@ const GestionPromociones = ({ onBack }) => {
           </form>
         </div>
       ) : (
-        /* VISTA B: GRID PRINCIPAL OPTIMIZADO */
+        /* VISTA B: GRID PRINCIPAL */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Tarjeta interactiva para abrir el formulario */}
           <div 
             onClick={() => setMostrarFormulario(true)}
             className="bg-[#1e293b] p-8 rounded-3xl border border-yellow-500/20 flex flex-col items-center justify-center border-dashed cursor-pointer hover:border-yellow-500 hover:bg-[#202c41] transition-all group min-h-[180px] shadow-md active:scale-[0.99]"
@@ -138,7 +173,6 @@ const GestionPromociones = ({ onBack }) => {
             </p>
           </div>
 
-          {/* Listado dinámico de promociones creadas */}
           {promociones.length === 0 ? (
             <div className="flex items-center justify-center bg-[#1e293b]/20 border border-gray-800/80 rounded-3xl text-center p-8 text-gray-500 italic font-medium min-h-[180px]">
               No hay promociones activas en este momento.
@@ -147,7 +181,6 @@ const GestionPromociones = ({ onBack }) => {
             promociones.map((promo) => (
               <div 
                 key={promo.id} 
-                // 🚀 CAMBIO VISUAL: Si hay una URL de imagen, la mete de fondo con un degradado oscuro encima
                 style={promo.imagen_url ? { backgroundImage: `linear-gradient(to bottom, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)), url(${promo.imagen_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                 className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-gray-600 transition-all animate-in zoom-in-95 duration-300 min-h-[180px]"
               >
