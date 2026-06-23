@@ -6,7 +6,7 @@ import GestionJugadores from './GestionJugadores.jsx';
 import GestionStaff from './GestionStaff.jsx';
 import MonitorAsistencias from './MonitorAsistencias.jsx'; 
 import CardPromociones from './CardPromociones.jsx'; // 🚀 IMPORTADO DE FORMA MODULAR
-// import GestionPromociones from './GestionPromociones.jsx'; // Descomenta cuando crees el archivo
+import GestionPromociones from './GestionPromociones.jsx'; // 🚀 DESCOMENTADO PARA RENDERIZAR LA VISTA
 
 // 👈 COMENTADO QUIRÚRGICAMENTE: Evita que Vite truene al no encontrar los archivos en esta carpeta
 // import LoginJugador from './LoginJugador.jsx';
@@ -113,7 +113,7 @@ function App() {
       case 'asistencias': 
         return <MonitorAsistencias onBack={() => setView('dashboard')} />;
       case 'promociones':
-        return <div className="text-white p-10 text-center">Módulo de Promociones en desarrollo...</div>;
+        return <GestionPromociones onBack={() => setView('dashboard')} />; // 🚀 CAMBIO QUIRÚRGICO REALIZADO AQUÍ
       default:
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
