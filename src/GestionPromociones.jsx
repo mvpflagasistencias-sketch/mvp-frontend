@@ -191,7 +191,7 @@ const GestionPromociones = ({ onBack }) => {
             <>🏷️ Gestión de <span className="text-yellow-500">Promociones</span></>
           )}
         </h2>
-        <br>
+        <br></br>
         <button 
           onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
           disabled={cargando}
@@ -199,7 +199,6 @@ const GestionPromociones = ({ onBack }) => {
         >
           {mostrarFormulario ? '← Cancelar' : '← Volver'}
         </button>
-        </br>
       </div>
 
       {/* VISTA A: FORMULARIO DE CREACIÓN */}
