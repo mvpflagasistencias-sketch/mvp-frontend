@@ -195,8 +195,7 @@ const GestionPromociones = ({ onBack }) => {
         
       </div>
 
-       <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm"></div>
-        
+       <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm">
         <button 
             onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
             disabled={cargando}
@@ -205,7 +204,7 @@ const GestionPromociones = ({ onBack }) => {
             {mostrarFormulario ? '← Cancelar' : '← Volver'}
         </button>
 
-      
+      </div>
 
 
 
