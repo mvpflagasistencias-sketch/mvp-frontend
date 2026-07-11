@@ -194,13 +194,20 @@ const GestionPromociones = ({ onBack }) => {
         
         
       </div>
-      <button 
-          onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
-          disabled={cargando}
-          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all border border-gray-700 hover:border-gray-600 shadow-md flex items-center gap-2 disabled:opacity-50"
-        >
-          {mostrarFormulario ? '← Cancelar' : '← Volver'}
+
+       <div className="flex justify-between items-center mb-8 bg-[#1e293b]/40 p-4 rounded-2xl border border-gray-800/60 backdrop-blur-sm"></div>
+        
+        <button 
+            onClick={mostrarFormulario ? () => setMostrarFormulario(false) : onBack}
+            disabled={cargando}
+            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all border border-gray-700 hover:border-gray-600 shadow-md flex items-center gap-2 disabled:opacity-50"
+          >
+            {mostrarFormulario ? '← Cancelar' : '← Volver'}
         </button>
+
+      
+
+
 
       {/* VISTA A: FORMULARIO DE CREACIÓN */}
       {mostrarFormulario ? (
