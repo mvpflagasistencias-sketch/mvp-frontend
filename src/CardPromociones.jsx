@@ -6,8 +6,11 @@ const CardPromociones = ({ alGestionar = () => {} }) => {
     <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 shadow-xl flex flex-col justify-between hover:border-yellow-600/50 transition-all">
       <div className="mb-4">
         <div className="text-3xl mb-2">🏷️</div>
-        <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Promociones</h3>
-        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">
+        {/* Cambios aquí: break-words para evitar desborde, text-lg responsivo */}
+        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tighter italic break-words">
+          Gestión de Promociones
+        </h3>
+        <p className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest mt-1">
           Gestiona cupones y ofertas.
         </p>
       </div>
