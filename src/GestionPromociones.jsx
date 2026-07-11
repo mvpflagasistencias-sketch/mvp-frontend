@@ -318,13 +318,10 @@ const GestionPromociones = ({ onBack }) => {
                 key={promo.id} 
                 onClick={() => setPromoSeleccionada(promo)} 
                 style={promo.imagen_url ? { backgroundImage: `linear-gradient(to bottom, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)), url(${promo.imagen_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                // Agregamos min-w-0 aquí abajo
                 className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-yellow-500/60 cursor-pointer hover:scale-[1.01] transition-all duration-200 min-h-[180px] min-w-0" 
               >
-                {/* Agregamos min-w-0 también aquí al contenedor hijo */}
                 <div className="min-w-0">
                   <div className="flex justify-between items-start gap-4 mb-3">
-                    {/* Añadimos break-words para que el título se ajuste */}
                     <h3 className="text-sm sm:text-base font-black text-yellow-500 uppercase tracking-tight italic leading-snug break-words">
                       {promo.titulo}
                     </h3>
