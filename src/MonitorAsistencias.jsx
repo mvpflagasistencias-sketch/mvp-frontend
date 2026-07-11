@@ -324,43 +324,46 @@ const MonitorAsistencias = ({ onBack }) => {
                     )}
 
                     <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#141b2e]/40">
-                      <table className="w-full text-left">
-                        <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
-                          <tr>
-                            <th className="p-4">Nombre del Atleta</th>
-                            <th className="p-4">Oficial Monitor</th>
-                            <th className="p-4">Hora Check-in</th>
-                            <th className="p-4 text-center">Estatus</th>
-                          </tr>
-                         Glastonbury </thead>
-                        <tbody className="divide-y divide-gray-800/60 text-xs">
-                          {p.jugadores.map((j, subIdx) => (
-                            <tr  
-                              key={j.id_jugador || subIdx}
-                              onClick={() => verDetalle({
-                                id_jugador: j.id_jugador,
-                                jugador: j.jugador_nombre,
-                                nombre_equipo: j.equipo_nombre,
-                                staff: j.staff_nombre,
-                                fecha: j.fecha,
-                                hora: j.hora,
-                                latitud: j.latitud,
-                                longitud: j.longitud
-                              })}
-                              className="hover:bg-green-500/5 cursor-pointer transition-all"
-                            >
-                              <td className="p-4 font-bold text-white uppercase">{j.jugador_nombre}</td>
-                              <td className="p-4 text-gray-400 italic uppercase">{j.staff_nombre}</td>
-                              <td className="p-4 font-mono text-white">{j.hora}</td>
-                              <td className="p-4 text-center">
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? 'bg-green-950 text-green-400 border border-green-800' : 'bg-gray-800 text-gray-400'}`}>
-                                  {j.latitud ? '📍 GPS OK' : 'OK'}
-                                </span>
-                              </td>
+                      {/* AÑADE ESTE DIV AQUÍ */}
+                      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                        <table className="w-full text-left min-w-[400px]">
+                          <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
+                            <tr>
+                              <th className="p-4">Nombre del Atleta</th>
+                              <th className="p-4">Oficial Monitor</th>
+                              <th className="p-4">Hora Check-in</th>
+                              <th className="p-4 text-center">Estatus</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-gray-800/60 text-xs">
+                            {p.jugadores.map((j, subIdx) => (
+                              <tr 
+                                key={j.id_jugador || subIdx}
+                                onClick={() => verDetalle({
+                                  id_jugador: j.id_jugador,
+                                  jugador: j.jugador_nombre,
+                                  nombre_equipo: j.equipo_nombre,
+                                  staff: j.staff_nombre,
+                                  fecha: j.fecha,
+                                  hora: j.hora,
+                                  latitud: j.latitud,
+                                  longitud: j.longitud
+                                })}
+                                className="hover:bg-green-500/5 cursor-pointer transition-all"
+                              >
+                                <td className="p-4 font-bold text-white uppercase whitespace-nowrap">{j.jugador_nombre}</td>
+                                <td className="p-4 text-gray-400 italic uppercase whitespace-nowrap">{j.staff_nombre}</td>
+                                <td className="p-4 font-mono text-white whitespace-nowrap">{j.hora}</td>
+                                <td className="p-4 text-center">
+                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? 'bg-green-950 text-green-400 border border-green-800' : 'bg-gray-800 text-gray-400'}`}>
+                                    {j.latitud ? '📍 GPS OK' : 'OK'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 )}
