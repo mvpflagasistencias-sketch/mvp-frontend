@@ -318,16 +318,19 @@ const GestionPromociones = ({ onBack }) => {
                 key={promo.id} 
                 onClick={() => setPromoSeleccionada(promo)} 
                 style={promo.imagen_url ? { backgroundImage: `linear-gradient(to bottom, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)), url(${promo.imagen_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-yellow-500/60 cursor-pointer hover:scale-[1.01] transition-all duration-200 min-h-[180px]"
+                // Agregamos min-w-0 aquí abajo
+                className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700/50 shadow-xl flex flex-col justify-between hover:border-yellow-500/60 cursor-pointer hover:scale-[1.01] transition-all duration-200 min-h-[180px] min-w-0" 
               >
-                <div>
+                {/* Agregamos min-w-0 también aquí al contenedor hijo */}
+                <div className="min-w-0">
                   <div className="flex justify-between items-start gap-4 mb-3">
-                    <h3 className="text-base font-black text-yellow-500 uppercase tracking-tight italic leading-snug">
+                    {/* Añadimos break-words para que el título se ajuste */}
+                    <h3 className="text-sm sm:text-base font-black text-yellow-500 uppercase tracking-tight italic leading-snug break-words">
                       {promo.titulo}
                     </h3>
                     {promo.fecha_fin && (
                       <span className="shrink-0 text-[9px] bg-red-950/60 text-red-400 border border-red-900/50 px-2.5 py-1 rounded-lg font-black uppercase tracking-wider">
-                        ⏰ Vence: {promo.fecha_fin.split('T')[0]} 
+                        ⏰ {promo.fecha_fin.split('T')[0]} 
                       </span>
                     )}
                   </div>
