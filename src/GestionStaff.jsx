@@ -126,45 +126,47 @@ const GestionStaff = ({ onBack }) => {
           </div>
 
           <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#0f172a] text-orange-400 text-[10px] uppercase font-black tracking-widest">
-                <tr>
-                  <th className="p-5">Personal Autorizado</th>
-                  <th className="p-5">Rol / Cargo</th> 
-                  <th className="p-5 text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {staffFiltrado.map(s => (
-                  <tr key={s.id} className="hover:bg-orange-500/5 transition-colors">
-                    <td className="p-5 text-left">
-                      <p 
-                        className="font-bold text-white uppercase text-sm cursor-pointer hover:text-orange-400 transition-colors inline-block"
-                        onClick={() => verPerfilStaff(s)}
-                      >
-                        {s.nombre} 🔍
-                      </p>
-                      <p className={`text-[9px] font-black uppercase mt-1 ${s.estado === 'activo' ? 'text-green-500' : 'text-red-500'}`}>
-                        • {s.estado}
-                      </p>
-                    </td>
-                    <td className="p-5 text-left">
-                      <span className="text-[10px] bg-orange-500/10 text-orange-500 border border-orange-500/20 px-3 py-1 rounded-lg font-black uppercase">
-                        {s.rol}
-                      </span>
-                    </td>
-                    <td className="p-5 text-center">
-                      <button 
-                        onClick={() => cambiarEstado(s.id, s.estado)} 
-                        className={`text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all ${s.estado === 'activo' ? 'text-red-500 hover:bg-red-500/10' : 'text-green-500 hover:bg-green-500/10'}`}
-                      >
-                        {s.estado === 'activo' ? 'Revocar' : 'Activar'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table className="w-full text-left border-collapse min-w-[350px]">
+                  <thead className="bg-[#0f172a] text-orange-400 text-[10px] uppercase font-black tracking-widest">
+                    <tr>
+                      <th className="p-5">Personal Autorizado</th>
+                      <th className="p-5">Rol / Cargo</th> 
+                      <th className="p-5 text-center">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {staffFiltrado.map(s => (
+                      <tr key={s.id} className="hover:bg-orange-500/5 transition-colors">
+                        <td className="p-5 text-left">
+                          <p 
+                            className="font-bold text-white uppercase text-sm cursor-pointer hover:text-orange-400 transition-colors inline-block"
+                            onClick={() => verPerfilStaff(s)}
+                          >
+                            {s.nombre} 🔍
+                          </p>
+                          <p className={`text-[9px] font-black uppercase mt-1 ${s.estado === 'activo' ? 'text-green-500' : 'text-red-500'}`}>
+                            • {s.estado}
+                          </p>
+                        </td>
+                        <td className="p-5 text-left">
+                          <span className="text-[10px] bg-orange-500/10 text-orange-500 border border-orange-500/20 px-3 py-1 rounded-lg font-black uppercase">
+                            {s.rol}
+                          </span>
+                        </td>
+                        <td className="p-5 text-center">
+                          <button 
+                            onClick={() => cambiarEstado(s.id, s.estado)} 
+                            className={`text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all ${s.estado === 'activo' ? 'text-red-500 hover:bg-red-500/10' : 'text-green-500 hover:bg-green-500/10'}`}
+                          >
+                            {s.estado === 'activo' ? 'Revocar' : 'Activar'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+</div>
             {staffFiltrado.length === 0 && (
               <div className="p-10 text-center text-gray-600 font-bold uppercase text-xs tracking-widest italic">
                 No se encontraron coincidencias...
