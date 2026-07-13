@@ -85,7 +85,7 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
             {cargando ? 'Verificando...' : 'Entrar al Sistema'}
           </button>
 
-          {/* 👈 NUEVO ENLACE: Acceso directo al Portal de Atletas en la misma tarjeta */}
+          
           
         </div>
       </form>
