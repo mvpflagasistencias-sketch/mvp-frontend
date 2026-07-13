@@ -380,7 +380,7 @@ const MonitorAsistencias = ({ onBack }) => {
       )}
 
 
-      
+
 
      {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
 {activeTab === 'historial' && (
@@ -397,40 +397,42 @@ const MonitorAsistencias = ({ onBack }) => {
         </thead>
         <tbody className="divide-y divide-gray-800">
           {historialCompleto.map((a) => (
-            <tr 
-              key={a.id_asistencia} 
-              onClick={() => verDetalle({
-                id_jugador: a.id_jugador || a.jugador_id,
-                jugador: a.jugador_nombre,
-                nombre_equipo: a.jugador_equipo_original,
-                staff: a.staff_nombre || a.nombre_staff,
-                fecha: a.fecha,
-                hora: a.hora,
-                latitud: a.latitud,
-                longitud: a.longitud
-              })}
-              className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
-            >
-              <td className="p-5 whitespace-nowrap">
-                <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
-                <p className="text-[10px] text-gray-500 uppercase font-medium">
-                  J{a.jornada} - {a.equipo_local} <span className="text-green-500 font-bold">vs</span> {a.equipo_visitante}
-                </p>
-              </td>
-              <td className="p-5 text-gray-400 text-xs font-bold uppercase italic whitespace-nowrap">
-                {a.staff_nombre || a.nombre_staff || "SIN STAFF"}
-              </td>
-              <td className="p-5 text-xs whitespace-nowrap">
-                <p className="text-white font-mono">{a.hora}</p>
-                <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
-              </td>
-              <td className="p-5 text-center whitespace-nowrap">
-                <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                  {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
-                </span>
-              </td>
-            </tr>
-          ))}
+  <tr 
+    key={a.id_asistencia} 
+    onClick={() => verDetalle({
+      id_jugador: a.id_jugador || a.jugador_id,
+      jugador: a.jugador_nombre,
+      nombre_equipo: a.jugador_equipo_original,
+      // CAMBIO 1: Usar 'a.staff' que es el alias definido en tu SQL
+      staff: a.staff || "SIN STAFF", 
+      fecha: a.fecha,
+      hora: a.hora,
+      latitud: a.latitud,
+      longitud: a.longitud
+    })}
+    className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
+  >
+    <td className="p-5 whitespace-nowrap">
+      <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
+      <p className="text-[10px] text-gray-500 uppercase font-medium">
+        J{a.jornada} - {a.equipo_local} <span className="text-green-500 font-bold">vs</span> {a.equipo_visitante}
+      </p>
+    </td>
+    {/* CAMBIO 2: Aquí también usamos 'a.staff' */}
+    <td className="p-5 text-gray-400 text-xs font-bold uppercase italic whitespace-nowrap">
+      {a.staff || "SIN STAFF"}
+    </td>
+    <td className="p-5 text-xs whitespace-nowrap">
+      <p className="text-white font-mono">{a.hora}</p>
+      <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
+    </td>
+    <td className="p-5 text-center whitespace-nowrap">
+      <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
+        {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
+      </span>
+    </td>
+  </tr>
+))}
         </tbody>
       </table>
     </div>
