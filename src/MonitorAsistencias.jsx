@@ -396,6 +396,8 @@ const MonitorAsistencias = ({ onBack }) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-800">
+
+          {console.log("Datos recibidos en historial:", historialCompleto)}s
           {historialCompleto.map((a) => (
   <tr 
     key={a.id_asistencia} 
