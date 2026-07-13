@@ -381,60 +381,49 @@ const MonitorAsistencias = ({ onBack }) => {
 
 
 
-
 {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
 {activeTab === 'historial' && (
   <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <table className="w-full text-left min-w-[500px]">
-        {/* ... tu thead sigue igual ... */}
         <tbody className="divide-y divide-gray-800">
-          {historialCompleto.map((a) => {
-            // DICCIONARIO RÁPIDO: Sustituye estos IDs con los nombres reales de tu Staff
-            const nombresStaff = {
-              5: "LOLA", // Basado en tu imagen donde aparece LOLA con ID 5
-              3: "STAFF A",
-              4: "STAFF B",
-              7: "STAFF C",
-              8: "STAFF D"
-            };
-
-            return (
-              <tr 
-                key={a.id_asistencia} 
-                onClick={() => verDetalle({
-                  id_jugador: a.id_jugador || a.jugador_id,
-                  jugador: a.jugador_nombre,
-                  nombre_equipo: a.jugador_equipo_original,
-                  staff: nombresStaff[a.staff_id] || "SIN STAFF",
-                  fecha: a.fecha,
-                  hora: a.hora,
-                  latitud: a.latitud,
-                  longitud: a.longitud
-                })}
-                className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
-              >
-                <td className="p-5 whitespace-nowrap">
-                  <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
-                  <p className="text-[10px] text-gray-500 uppercase font-medium">
-                    J{a.jornada} - {a.equipo_local} <span className="text-green-500 font-bold">vs</span> {a.equipo_visitante}
-                  </p>
-                </td>
-                <td className="p-5 text-gray-400 text-xs font-bold uppercase italic whitespace-nowrap">
-                  {nombresStaff[a.staff_id] || "SIN STAFF"}
-                </td>
-                <td className="p-5 text-xs whitespace-nowrap">
-                  <p className="text-white font-mono">{a.hora}</p>
-                  <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
-                </td>
-                <td className="p-5 text-center whitespace-nowrap">
-                  <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                    {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
+          {historialCompleto.map((a) => (
+            <tr 
+              key={a.id_asistencia} 
+              onClick={() => verDetalle({
+                id_jugador: a.id_jugador || a.jugador_id,
+                jugador: a.jugador_nombre,
+                nombre_equipo: a.jugador_equipo_original,
+                // AQUÍ USAMOS DIRECTAMENTE EL DATO QUE VIENE DE LA DB
+                staff: a.staff_nombre || "SIN STAFF", 
+                fecha: a.fecha,
+                hora: a.hora,
+                latitud: a.latitud,
+                longitud: a.longitud
+              })}
+              className="hover:bg-green-500/10 cursor-pointer transition-all border-l-4 border-transparent hover:border-green-500"
+            >
+              <td className="p-5 whitespace-nowrap">
+                <p className="font-bold text-white uppercase text-sm">{a.jugador_nombre} 🔍</p>
+                <p className="text-[10px] text-gray-500 uppercase font-medium">
+                  J{a.jornada} - {a.equipo_local} vs {a.equipo_visitante}
+                </p>
+              </td>
+              {/* AQUÍ TAMBIÉN USAMOS EL DATO DIRECTO */}
+              <td className="p-5 text-gray-400 text-xs font-bold uppercase italic whitespace-nowrap">
+                {a.staff_nombre || "SIN STAFF"}
+              </td>
+              <td className="p-5 text-xs whitespace-nowrap">
+                <p className="text-white font-mono">{a.hora}</p>
+                <p className="text-gray-500 font-mono text-[10px]">{formatearFechaLimpia(a.fecha)}</p>
+              </td>
+              <td className="p-5 text-center whitespace-nowrap">
+                <span className="bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                  {a.latitud ? '📍 Geolocalizado' : 'Check-in OK'}
+                </span>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
