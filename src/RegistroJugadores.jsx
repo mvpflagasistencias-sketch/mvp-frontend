@@ -78,7 +78,7 @@ const RegistroJugadores = ({ onBack }) => {
         <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-5">
           <div>
             <h2 className="text-3xl font-bold text-white tracking-tight">Registro de Atleta</h2>
-            <p className="text-blue-400 font-medium">RF-01: Gestión de Perfiles</p>
+            <p className="text-blue-400 font-medium"></p>
           </div>
           <button 
             onClick={onBack}

@@ -77,7 +77,7 @@ const RegistroEquipos = ({ onBack }) => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-white uppercase italic tracking-tighter">Gestión de Equipos</h2>
-          <p className="text-purple-400 font-bold text-xs uppercase tracking-widest">RF-04 / CRUD de Entidades</p>
+          <p className="text-purple-400 font-bold text-xs uppercase tracking-widest"></p>
         </div>
         <button onClick={onBack} className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-xl transition-all font-bold text-xs uppercase">
           ← Volver al Dashboard
