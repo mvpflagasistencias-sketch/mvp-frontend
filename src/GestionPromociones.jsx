@@ -507,28 +507,54 @@ const buscarJugador = (texto) => {
                       {tipoFiltro === 'jugador_especifico' && (
                         <div className="mt-4 relative">
                           <input 
-                              type="text"
-                              value={busqueda}
-                              placeholder="Escribe el nombre del atleta..."
-                              onChange={(e) => buscarJugador(e.target.value)} // <--- ESTO ES VITAL
-                              className="w-full p-3 rounded-xl bg-[#0f172a] border border-blue-500 text-white"
-                            />
+                            type="text"
+                            value={busqueda}
+                            placeholder="Escribe el nombre del atleta..."
+                            onChange={(e) => buscarJugador(e.target.value)}
+                            className="w-full p-3 rounded-xl bg-[#0f172a] border border-blue-500 text-white"
+                          />
                           
-                          {/* Lista de seleccionados */}
-<div className="flex flex-wrap gap-2 mt-2">
-  {idsSeleccionados.map((id) => {
-    const jugador = listaCompletaJugadores.find(j => j.id === id);
-    return (
-      <span key={id} className="bg-blue-600/20 border border-blue-500 text-blue-300 text-[10px] px-2 py-1 rounded-full font-bold uppercase flex items-center gap-2">
-        {jugador?.nombre}
-        <button onClick={() => setIdsSeleccionados(idsSeleccionados.filter(i => i !== id))} className="text-blue-300 hover:text-white">✕</button>
-      </span>
-    );
-  })}
-</div>
+                          {/* LISTA DESPLEGABLE DE SUGERENCIAS */}
+                          {jugadoresSugeridos.length > 0 && (
+                            <ul className="absolute z-[9999] w-full bg-[#1e293b] border border-gray-700 mt-1 rounded-xl shadow-xl max-h-40 overflow-y-auto">
+                              {jugadoresSugeridos.map((jugador) => (
+                                <li 
+                                  key={jugador.id} 
+                                  onClick={() => {
+                                    if (!idsSeleccionados.includes(jugador.id)) {
+                                      setIdsSeleccionados([...idsSeleccionados, jugador.id]);
+                                    }
+                                    setBusqueda('');
+                                    setJugadoresSugeridos([]);
+                                  }}
+                                  className="px-4 py-2 hover:bg-blue-600/20 text-white cursor-pointer text-sm"
+                                >
+                                  {jugador.nombre}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          
+                          {/* Etiquetas de seleccionados */}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {idsSeleccionados.map((id) => {
+                              const jugador = listaCompletaJugadores.find(j => j.id === id);
+                              return (
+                                <span key={id} className="bg-blue-600/20 border border-blue-500 text-blue-300 text-[10px] px-2 py-1 rounded-full font-bold uppercase flex items-center gap-2">
+                                  {jugador?.nombre}
+                                  <button 
+                                    type="button"
+                                    onClick={() => setIdsSeleccionados(idsSeleccionados.filter(i => i !== id))} 
+                                    className="text-blue-300 hover:text-white"
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
-
                       {/* Render condicional: Input para límite de asistencias */}
                       {tipoFiltro === 'top_asistencias' && (
                         <div className="animate-in fade-in zoom-in-95 duration-200">
