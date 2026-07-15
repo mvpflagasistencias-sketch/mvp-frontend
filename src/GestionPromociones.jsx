@@ -28,6 +28,7 @@ const GestionPromociones = ({ onBack }) => {
 const [busqueda, setBusqueda] = useState('');
 const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]);
 const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]);
+const [idsSeleccionados, setIdsSeleccionados] = useState([]);
 
 
 
