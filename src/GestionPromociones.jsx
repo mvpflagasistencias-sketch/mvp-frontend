@@ -23,6 +23,11 @@ const GestionPromociones = ({ onBack }) => {
   const [equipoId, setEquipoId] = useState('');
   const [listaEquipos, setListaEquipos] = useState([]); // Almacena el catálogo de escuadras para el select
 
+
+  const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]); // Necesitamos esto para filtrar
+  const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]); // Los que salen al escribir
+  const [idsSeleccionados, setIdsSeleccionados] = useState([]); // Los IDs que vas a enviar
+
   // =========================================================================
   // 🔄 EFECTO: OBTENER LAS PROMOCIONES Y EL CATÁLOGO DE EQUIPOS
   // =========================================================================
@@ -55,7 +60,10 @@ const GestionPromociones = ({ onBack }) => {
   useEffect(() => {
     obtenerPromociones();
     obtenerEquiposCatalogo();
-  }, [mostrarFormulario]); 
+    fetch(`${API_URL}/api/jugadores`)
+    .then(res => res.json())
+    .then(data => setListaCompletaJugadores(data));
+}, [mostrarFormulario]);
 
   // 🚀 FUNCIÓN: PRECARGA LOS DATOS ACTUALES E INICIA MODO EDICIÓN
   const iniciarEdicion = () => {
@@ -455,16 +463,36 @@ const GestionPromociones = ({ onBack }) => {
                           </select>
                       </div>
 
-                      {/* Si seleccionan jugador específico, mostramos un buscador */}
                       {tipoFiltro === 'jugador_especifico' && (
-                        <div className="mt-4">
+                        <div className="mt-4 relative">
                           <input 
                             type="text" 
-                            placeholder="🔎 BUSCAR ATLETA POR NOMBRE..."
+                            placeholder="🔎 BUSCAR ATLETA..."
+                            value={busqueda}
                             onChange={(e) => buscarJugador(e.target.value)}
-                            className="w-full bg-[#0f172a] p-3 rounded-xl border border-blue-500"
+                            className="w-full bg-[#0f172a] p-3 rounded-xl border border-blue-500 text-white"
                           />
-                          {/* Aquí desplegarías una lista con los resultados de la búsqueda para seleccionar */}
+                          
+                          {/* LISTA DE SUGERENCIAS */}
+                          {jugadoresSugeridos.length > 0 && (
+                            <ul className="absolute z-50 w-full bg-[#1e293b] border border-blue-500 rounded-xl mt-1 max-h-40 overflow-y-auto">
+                              {jugadoresSugeridos.map(j => (
+                                <li 
+                                  key={j.id} 
+                                  onClick={() => {
+                                    setIdsSeleccionados([...idsSeleccionados, j.id]);
+                                    setBusqueda(j.nombre);
+                                    setJugadoresSugeridos([]);
+                                    alert(`Atleta ${j.nombre} agregado a la lista de envío.`);
+                                  }}
+                                  className="p-3 hover:bg-blue-600/30 cursor-pointer border-b border-gray-800"
+                                >
+                                  <div className="text-white font-bold text-sm">{j.nombre}</div>
+                                  <div className="text-gray-500 text-[10px]">{j.correo}</div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       )}
 
