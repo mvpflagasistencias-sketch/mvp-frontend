@@ -167,7 +167,9 @@ const GestionJugadores = ({ alRegistro }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {jugadoresFiltrados.map((j) => (
+              {[...jugadoresFiltrados]
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map((j) => (
                 <tr key={j.id} className="hover:bg-blue-500/5 transition-colors">
                   <td 
                     className="p-5 font-bold text-white uppercase text-sm cursor-pointer hover:text-blue-400 transition-colors"
