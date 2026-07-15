@@ -520,16 +520,20 @@ const buscarJugador = (texto) => {
                               {jugadoresSugeridos.map((jugador) => (
                                 <li 
                                   key={jugador.id} 
-                                  onClick={() => {
-                                    if (!idsSeleccionados.includes(jugador.id)) {
-                                      setIdsSeleccionados([...idsSeleccionados, jugador.id]);
-                                    }
-                                    setBusqueda('');
-                                    setJugadoresSugeridos([]);
-                                  }}
-                                  className="px-4 py-2 hover:bg-blue-600/20 text-white cursor-pointer text-sm"
-                                >
-                                  {jugador.nombre}
+                                    onClick={() => {
+                                      if (!idsSeleccionados.includes(jugador.id)) {
+                                        setIdsSeleccionados([...idsSeleccionados, jugador.id]);
+                                      }
+                                      setBusqueda('');
+                                      setJugadoresSugeridos([]);
+                                    }}
+                                    className="px-4 py-3 hover:bg-blue-600/30 cursor-pointer border-b border-gray-700/50 transition-colors"
+                                  >
+                                    {/* NOMBRE EN NEGRITA */}
+                                    <div className="text-white font-bold text-sm">{jugador.nombre}</div>
+                                    
+                                    {/* CORREO EN PEQUEÑO Y GRIS */}
+                                    <div className="text-gray-500 text-[10px] uppercase tracking-wider">{jugador.correo}</div>
                                 </li>
                               ))}
                             </ul>
