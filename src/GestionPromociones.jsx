@@ -23,11 +23,13 @@ const GestionPromociones = ({ onBack }) => {
   const [equipoId, setEquipoId] = useState('');
   const [listaEquipos, setListaEquipos] = useState([]); // Almacena el catálogo de escuadras para el select
 
-
-  // --- ESTAS TRES LÍNEAS TE FALTABAN O ESTABAN MAL DECLARADAS ---
-const [busqueda, setBusqueda] = useState('');
+const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]); // ¡ESTE ES EL QUE TE FALTA!
 const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]);
 const [idsSeleccionados, setIdsSeleccionados] = useState([]);
+const [busqueda, setBusqueda] = useState('');
+
+
+
   // =========================================================================
   // 🔄 EFECTO: OBTENER LAS PROMOCIONES Y EL CATÁLOGO DE EQUIPOS
   // =========================================================================
@@ -58,11 +60,14 @@ const [idsSeleccionados, setIdsSeleccionados] = useState([]);
   };
 
   useEffect(() => {
-    obtenerPromociones();
-    obtenerEquiposCatalogo();
-    fetch(`${API_URL}/api/jugadores`)
+  obtenerPromociones();
+  obtenerEquiposCatalogo();
+  
+  // Este bloque es el que probablemente te faltaba o estaba mal escrito
+  fetch(`${API_URL}/api/jugadores`)
     .then(res => res.json())
-    .then(data => setListaCompletaJugadores(data));
+    .then(data => setListaCompletaJugadores(data))
+    .catch(err => console.error("Error al cargar jugadores para buscar:", err));
 }, [mostrarFormulario]);
 
   // 🚀 FUNCIÓN: PRECARGA LOS DATOS ACTUALES E INICIA MODO EDICIÓN
@@ -493,26 +498,18 @@ const [idsSeleccionados, setIdsSeleccionados] = useState([]);
                             className="w-full bg-[#0f172a] p-3 rounded-xl border border-blue-500 text-white"
                           />
                           
-                          {/* LISTA DE SUGERENCIAS */}
-                          {jugadoresSugeridos.length > 0 && (
-                            <ul className="absolute z-50 w-full bg-[#1e293b] border border-blue-500 rounded-xl mt-1 max-h-40 overflow-y-auto">
-                              {jugadoresSugeridos.map(j => (
-                                <li 
-                                  key={j.id} 
-                                  onClick={() => {
-                                    setIdsSeleccionados([...idsSeleccionados, j.id]);
-                                    setBusqueda(j.nombre);
-                                    setJugadoresSugeridos([]);
-                                    alert(`Atleta ${j.nombre} agregado a la lista de envío.`);
-                                  }}
-                                  className="p-3 hover:bg-blue-600/30 cursor-pointer border-b border-gray-800"
-                                >
-                                  <div className="text-white font-bold text-sm">{j.nombre}</div>
-                                  <div className="text-gray-500 text-[10px]">{j.correo}</div>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          {/* Lista de seleccionados */}
+<div className="flex flex-wrap gap-2 mt-2">
+  {idsSeleccionados.map((id) => {
+    const jugador = listaCompletaJugadores.find(j => j.id === id);
+    return (
+      <span key={id} className="bg-blue-600/20 border border-blue-500 text-blue-300 text-[10px] px-2 py-1 rounded-full font-bold uppercase flex items-center gap-2">
+        {jugador?.nombre}
+        <button onClick={() => setIdsSeleccionados(idsSeleccionados.filter(i => i !== id))} className="text-blue-300 hover:text-white">✕</button>
+      </span>
+    );
+  })}
+</div>
                         </div>
                       )}
 
