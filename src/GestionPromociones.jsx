@@ -23,10 +23,11 @@ const GestionPromociones = ({ onBack }) => {
   const [equipoId, setEquipoId] = useState('');
   const [listaEquipos, setListaEquipos] = useState([]); // Almacena el catálogo de escuadras para el select
 
-const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]); // ¡ESTE ES EL QUE TE FALTA!
-const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]);
-const [idsSeleccionados, setIdsSeleccionados] = useState([]);
+
+
 const [busqueda, setBusqueda] = useState('');
+const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]);
+const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]);
 
 
 
