@@ -222,7 +222,9 @@ const MonitorAsistencias = ({ onBack }) => {
       {/* ================= PESTAÑA 1: POR PARTIDOS ================= */}
       {activeTab === 'partidos' && (
         <div className="grid grid-cols-1 gap-4">
-          {[...partidosAgrupados].reverse().map((p) => {
+          {[...partidosAgrupados]
+            .sort((a, b) => new Date(b.fecha_maxima || 0) - new Date(a.fecha_maxima || 0))
+            .map((p) => {
             const matchKey = `${p.jornada}-${p.categoria}-${p.equipo_local}-${p.equipo_visitante}`;
             const isSelected = partidoExpandido === matchKey;
 
@@ -387,7 +389,10 @@ const MonitorAsistencias = ({ onBack }) => {
     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <table className="w-full text-left min-w-[500px]">
         <tbody className="divide-y divide-gray-800">
-          {[...historialCompleto].reverse().map((a) => (
+          {[...historialCompleto]
+            .sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))
+            .reverse()
+            .map((a) => (
             <tr 
               key={a.id_asistencia} 
               onClick={() => verDetalle({
@@ -509,7 +514,10 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
 
                 <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-2xl custom-scrollbar">
-                  {[...acumuladasJugador].reverse().map((ac, acIdx) => (
+                  {[...acumuladasJugador]
+                    .sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))
+                    .reverse()
+                    .map((ac, acIdx) => (
                     <div 
                       key={ac.id_asistencia || acIdx} 
                       className="bg-[#0f172a]/70 border border-gray-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-gray-700 transition-all shadow-inner"
