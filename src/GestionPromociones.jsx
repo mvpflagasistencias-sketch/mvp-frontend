@@ -442,17 +442,31 @@ const GestionPromociones = ({ onBack }) => {
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[9px] font-black text-gray-400 uppercase mb-1">Criterio de Filtro</label>
-                        <select 
-                          value={tipoFiltro} 
-                          onChange={(e) => setTipoFiltro(e.target.value)}
-                          className="w-full bg-[#1e293b] border border-gray-700 rounded-lg px-3 py-2 text-white text-xs font-bold outline-none focus:border-yellow-500 cursor-pointer"
-                        >
-                          <option value="todos">👥 ENVIAR A TODOS</option>
-                          <option value="top_asistencias">🏆 TOP ASISTENCIAS (PREMIO)</option>
-                          <option value="por_equipo">🏈 POR SQUAD ESPECÍFICO</option>
-                        </select>
+                        <label className="text-[10px] text-gray-500 font-black uppercase block mb-1">Criterio de Filtro</label>
+                          <select 
+                            value={tipoFiltro} 
+                            onChange={(e) => setTipoFiltro(e.target.value)}
+                            className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white font-bold"
+                          >
+                            <option value="todos">ENVIAR A TODOS</option>
+                            <option value="top_asistencias">TOP ASISTENCIAS (PREMIO)</option>
+                            <option value="por_equipo">POR SQUAD ESPECÍFICO</option>
+                            <option value="jugador_especifico">JUGADOR ESPECÍFICO (BUSCAR)</option>
+                          </select>
                       </div>
+
+                      {/* Si seleccionan jugador específico, mostramos un buscador */}
+                      {tipoFiltro === 'jugador_especifico' && (
+                        <div className="mt-4">
+                          <input 
+                            type="text" 
+                            placeholder="🔎 BUSCAR ATLETA POR NOMBRE..."
+                            onChange={(e) => buscarJugador(e.target.value)}
+                            className="w-full bg-[#0f172a] p-3 rounded-xl border border-blue-500"
+                          />
+                          {/* Aquí desplegarías una lista con los resultados de la búsqueda para seleccionar */}
+                        </div>
+                      )}
 
                       {/* Render condicional: Input para límite de asistencias */}
                       {tipoFiltro === 'top_asistencias' && (
