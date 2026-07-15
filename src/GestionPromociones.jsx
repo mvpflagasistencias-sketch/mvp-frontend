@@ -24,10 +24,10 @@ const GestionPromociones = ({ onBack }) => {
   const [listaEquipos, setListaEquipos] = useState([]); // Almacena el catálogo de escuadras para el select
 
 
-  const [listaCompletaJugadores, setListaCompletaJugadores] = useState([]); // Necesitamos esto para filtrar
-  const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]); // Los que salen al escribir
-  const [idsSeleccionados, setIdsSeleccionados] = useState([]); // Los IDs que vas a enviar
-
+  // --- ESTAS TRES LÍNEAS TE FALTABAN O ESTABAN MAL DECLARADAS ---
+const [busqueda, setBusqueda] = useState('');
+const [jugadoresSugeridos, setJugadoresSugeridos] = useState([]);
+const [idsSeleccionados, setIdsSeleccionados] = useState([]);
   // =========================================================================
   // 🔄 EFECTO: OBTENER LAS PROMOCIONES Y EL CATÁLOGO DE EQUIPOS
   // =========================================================================
@@ -109,25 +109,45 @@ const GestionPromociones = ({ onBack }) => {
   // 🚀 ACCIÓN: ENVIAR PROMOCIÓN SELECCIONADA CON CRITERIOS DE SEGMENTACIÓN
   // =========================================================================
   const handleEnviarAJugadores = async (id) => {
-    setEnviando(true);
-    try {
-        const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipoFiltro, limite, equipoId })
-        });
-        
-        const data = await response.json();
-        if (response.ok) {
-            alert("¡Éxito! " + data.message);
-        } else {
-            alert("Error: " + data.error);
-        }
-    } catch (err) {
-        alert("Error de conexión con el servidor");
-    } finally {
-        setEnviando(false); // ESTO QUITA EL "SEGMENTANDO..."
+  // 1. Validar que si eligió "jugador_especifico", al menos haya seleccionado uno
+  if (tipoFiltro === 'jugador_especifico' && idsSeleccionados.length === 0) {
+    alert("❌ Por favor, selecciona al menos un jugador de la lista.");
+    return;
+  }
+
+  setEnviando(true);
+  try {
+    // 2. Preparamos el cuerpo del envío
+    const bodyEnvio = { 
+      tipoFiltro, 
+      limite, 
+      equipoId 
+    };
+
+    // 3. Si es específico, agregamos los IDs al cuerpo
+    if (tipoFiltro === 'jugador_especifico') {
+      bodyEnvio.idsJugadores = idsSeleccionados;
     }
+
+    const response = await fetch(`${API_URL}/api/promociones/enviar/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyEnvio)
+    });
+    
+    const data = await response.json();
+    if (response.ok) {
+      alert("¡Éxito! " + data.message);
+      setIdsSeleccionados([]); // Limpiamos la selección después de enviar
+      setBusqueda('');         // Limpiamos el buscador
+    } else {
+      alert("Error: " + data.error);
+    }
+  } catch (err) {
+    alert("Error de conexión con el servidor");
+  } finally {
+    setEnviando(false);
+  }
 };
 
   // =========================================================================
