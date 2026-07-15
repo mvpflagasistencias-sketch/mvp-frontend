@@ -30,6 +30,18 @@ const [busqueda, setBusqueda] = useState('');
 
 
 
+const buscarJugador = (texto) => {
+    setBusqueda(texto);
+    if (texto.length > 0) {
+      const resultados = listaCompletaJugadores.filter(j => 
+        j.nombre.toLowerCase().includes(texto.toLowerCase())
+      );
+      setJugadoresSugeridos(resultados);
+    } else {
+      setJugadoresSugeridos([]);
+    }
+  };
+
   // =========================================================================
   // 🔄 EFECTO: OBTENER LAS PROMOCIONES Y EL CATÁLOGO DE EQUIPOS
   // =========================================================================
