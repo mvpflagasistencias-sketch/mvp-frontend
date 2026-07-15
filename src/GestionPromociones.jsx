@@ -503,12 +503,12 @@ const buscarJugador = (texto) => {
                       {tipoFiltro === 'jugador_especifico' && (
                         <div className="mt-4 relative">
                           <input 
-                            type="text" 
-                            placeholder="🔎 BUSCAR ATLETA..."
-                            value={busqueda}
-                            onChange={(e) => buscarJugador(e.target.value)}
-                            className="w-full bg-[#0f172a] p-3 rounded-xl border border-blue-500 text-white"
-                          />
+                              type="text"
+                              value={busqueda}
+                              placeholder="Escribe el nombre del atleta..."
+                              onChange={(e) => buscarJugador(e.target.value)} // <--- ESTO ES VITAL
+                              className="w-full p-3 rounded-xl bg-[#0f172a] border border-blue-500 text-white"
+                            />
                           
                           {/* Lista de seleccionados */}
 <div className="flex flex-wrap gap-2 mt-2">
