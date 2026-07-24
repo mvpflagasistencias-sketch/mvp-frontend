@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 // IMPORTANTE: Cambiamos axios por nuestra instancia personalizada
 import api from "./api";
-import { QRCodeSVG } from "qrcode.react";
 
 const GestionStaff = ({ onBack }) => {
   const [staff, setStaff] = useState([]);
@@ -263,7 +262,7 @@ const GestionStaff = ({ onBack }) => {
         </div>
       </div>
 
-      {/* --- MODAL DE EXPEDIENTE / QR / EDICIÓN --- */}
+      {/* --- MODAL DE EXPEDIENTE / FOTO / EDICIÓN --- */}
       {isViewModalOpen && staffSeleccionado && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-[#1e293b] w-full max-w-md rounded-3xl border border-orange-500/30 shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
@@ -290,13 +289,17 @@ const GestionStaff = ({ onBack }) => {
             <div className="p-8 space-y-6 flex flex-col items-center">
               {!isEditando ? (
                 <>
-                  <div className="bg-white p-4 rounded-2xl shadow-inner mb-2">
-                    <QRCodeSVG
-                      value={staffSeleccionado.usuario}
-                      size={150}
-                      level={"H"}
-                      includeMargin={true}
-                    />
+                  {/* 🟢 FOTO DE PERFIL DEL STAFF EN LUGAR DEL QR */}
+                  <div className="w-36 h-36 rounded-full border-4 border-orange-500/40 bg-[#0f172a] overflow-hidden flex items-center justify-center shadow-inner mb-2">
+                    {staffSeleccionado.foto_perfil ? (
+                      <img
+                        src={staffSeleccionado.foto_perfil}
+                        alt="Foto de Perfil"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl">👤</span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 w-full">
