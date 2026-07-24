@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // IMPORTANTE: Cambiamos axios por nuestra instancia personalizada
 import api from "./api";
 
@@ -8,10 +8,25 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
   const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  // 🟢 NUEVOS ESTADOS PARA LA RECUPERACIÓN POR CORREO
+  // Estados para recuperación y cambio por token
   const [isRecuperando, setIsRecuperando] = useState(false);
   const [correoRecuperacion, setCorreoRecuperacion] = useState("");
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+
+  // 🟢 NUEVOS ESTADOS PARA CAPTURAR EL TOKEN DE LA URL
+  const [tokenRestauracion, setTokenRestauracion] = useState(null);
+  const [nuevaPassword, setNuevaPassword] = useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
+  const [actualizandoPass, setActualizandoPass] = useState(false);
+
+  // Al cargar el componente, revisamos si la URL trae un token de restablecimiento
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenUrl = params.get("token");
+    if (tokenUrl) {
+      setTokenRestauracion(tokenUrl);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,7 +59,7 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
     }
   };
 
-  // 🟢 NUEVA FUNCIÓN: Solicitar el correo de recuperación al backend
+  // Solicitar el correo de recuperación al backend
   const handleSolicitarPassword = async (e) => {
     e.preventDefault();
     setEnviandoCorreo(true);
@@ -68,10 +83,107 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
     }
   };
 
+  // 🟢 NUEVA FUNCIÓN: Enviar la nueva contraseña usando el token
+  const handleActualizarConToken = async (e) => {
+    e.preventDefault();
+
+    if (nuevaPassword !== confirmarPassword) {
+      alert("❌ Las contraseñas no coinciden.");
+      return;
+    }
+
+    setActualizandoPass(true);
+
+    try {
+      const res = await api.post("/api/staff/actualizar-password-token", {
+        token: tokenRestauracion,
+        nuevaPassword,
+      });
+
+      alert("✅ " + (res.data.message || "¡Contraseña actualizada correctamente!"));
+      
+      // Limpiamos la URL quitando el token para regresar al login limpio
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTokenRestauracion(null);
+      setNuevaPassword("");
+      setConfirmarPassword("");
+    } catch (err) {
+      console.error("Error al actualizar contraseña con token:", err);
+      alert(
+        "❌ Error: " +
+          (err.response?.data?.error || "El enlace es inválido o ha expirado.")
+      );
+    } finally {
+      setActualizandoPass(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-4">
-      {!isRecuperando ? (
-        /* VISTA PRINCIPAL DE LOGIN */
+      {/* 🟢 CASO 1: VISTA DE NUEVA CONTRASEÑA (SI LLEGA TOKEN EN LA URL) */}
+      {tokenRestauracion ? (
+        <form
+          onSubmit={handleActualizarConToken}
+          className="bg-[#1e293b] p-8 rounded-3xl border border-gray-700 shadow-2xl w-full max-w-md text-left animate-in fade-in zoom-in duration-300"
+        >
+          <div className="mb-8 text-center">
+            <div className="bg-green-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl text-white shadow-lg shadow-green-500/20">
+              🔒
+            </div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
+              Nueva <span className="text-green-400">Contraseña</span>
+            </h2>
+            <p className="text-gray-400 text-xs mt-2 font-medium">
+              Ingresa tu nueva contraseña para completar el restablecimiento de tu cuenta de administrador.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block">
+                Nueva Contraseña
+              </label>
+              <input
+                type="password"
+                className="w-full bg-[#0f172a] p-4 rounded-2xl border border-gray-700 text-white outline-none focus:border-green-500 transition-all font-bold"
+                placeholder="••••••••"
+                value={nuevaPassword}
+                onChange={(e) => setNuevaPassword(e.target.value)}
+                required
+                disabled={actualizandoPass}
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block">
+                Confirmar Contraseña
+              </label>
+              <input
+                type="password"
+                className="w-full bg-[#0f172a] p-4 rounded-2xl border border-gray-700 text-white outline-none focus:border-green-500 transition-all font-bold"
+                placeholder="••••••••"
+                value={confirmarPassword}
+                onChange={(e) => setConfirmarPassword(e.target.value)}
+                required
+                disabled={actualizandoPass}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={actualizandoPass}
+              className={`w-full py-4 rounded-2xl font-black text-white transition-all mt-4 uppercase tracking-widest text-xs shadow-lg ${
+                actualizandoPass
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-500 shadow-green-900/20"
+              }`}
+            >
+              {actualizandoPass ? "Guardando..." : "Actualizar Contraseña"}
+            </button>
+          </div>
+        </form>
+      ) : !isRecuperando ? (
+        /* CASO 2: VISTA PRINCIPAL DE LOGIN */
         <form
           onSubmit={handleSubmit}
           className="bg-[#1e293b] p-8 rounded-3xl border border-gray-700 shadow-2xl w-full max-w-md text-left animate-in fade-in zoom-in duration-300"
@@ -143,7 +255,7 @@ const Login = ({ onLoginSuccess, onSwitchToJugador }) => {
           </div>
         </form>
       ) : (
-        /* VISTA PARA SOLICITAR RECUPERACIÓN POR CORREO */
+        /* CASO 3: VISTA PARA SOLICITAR RECUPERACIÓN POR CORREO */
         <form
           onSubmit={handleSolicitarPassword}
           className="bg-[#1e293b] p-8 rounded-3xl border border-gray-700 shadow-2xl w-full max-w-md text-left animate-in fade-in zoom-in duration-300"
