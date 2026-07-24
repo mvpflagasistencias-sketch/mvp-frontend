@@ -9,23 +9,23 @@ const GestionStaff = ({ onBack }) => {
     usuario: "",
     password: "",
     rol: "Staff",
+    correo: "", // 🟢 NUEVO: Campo de correo inicializado en vacío
   });
 
   const [busqueda, setBusqueda] = useState("");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [staffSeleccionado, setStaffSeleccionado] = useState(null);
 
-  // 🛠️ NUEVO ESTADO: Para controlar el modo de edición y los datos del formulario de actualización
   const [isEditando, setIsEditando] = useState(false);
   const [datosEdicion, setDatosEdicion] = useState({
     nombre: "",
     usuario: "",
     password: "",
+    correo: "", // 🟢 NUEVO: También para edición por si es admin
   });
 
   const cargarStaff = async () => {
     try {
-      // Usamos la instancia api y la ruta relativa
       const res = await api.get("/api/staff");
       setStaff(res.data);
     } catch (err) {
@@ -48,10 +48,15 @@ const GestionStaff = ({ onBack }) => {
   const handleRegistro = async (e) => {
     e.preventDefault();
     try {
-      // Usamos api.post
-      await api.post("/api/staff/registro", nuevoMiembro);
+      // Si el rol es Staff, nos aseguramos de mandar el correo como null o vacío
+      const payload = { ...nuevoMiembro };
+      if (payload.rol !== "Admin") {
+        payload.correo = null;
+      }
+
+      await api.post("/api/staff/registro", payload);
       alert("✅ Usuario de Staff creado exitosamente");
-      setNuevoMiembro({ nombre: "", usuario: "", password: "", rol: "Staff" });
+      setNuevoMiembro({ nombre: "", usuario: "", password: "", rol: "Staff", correo: "" });
       cargarStaff();
     } catch (err) {
       alert("❌ Error: El usuario ya existe o hubo un problema en el servidor");
@@ -60,37 +65,37 @@ const GestionStaff = ({ onBack }) => {
 
   const cambiarEstado = async (id, estadoActual) => {
     const nuevoEstado = estadoActual === "activo" ? "inactivo" : "activo";
-    // Usamos api.put
     await api.put(`/api/staff/estado/${id}`, { estado: nuevoEstado });
     cargarStaff();
   };
 
   const verPerfilStaff = (miembro) => {
     setStaffSeleccionado(miembro);
-    // Inicializamos los datos de edición con la información actual del miembro
     setDatosEdicion({
       nombre: miembro.nombre || "",
       usuario: miembro.usuario || "",
-      password: "", // La dejamos vacía por seguridad; si la llenan, se actualiza
+      password: "", 
+      correo: miembro.correo || "", // 🟢 Cargamos el correo si ya lo tiene registrado
+      rol: miembro.rol || "Staff",
     });
     setIsEditando(false);
     setIsViewModalOpen(true);
   };
 
-  // 🛠️ NUEVA FUNCIÓN: Manejar la actualización del miembro del staff
   const handleActualizarStaff = async (e) => {
     e.preventDefault();
     try {
       const payload = { ...datosEdicion };
-      // Si no escribieron contraseña nueva, la eliminamos para no sobrescribirla con vacíos
       if (!payload.password) {
         delete payload.password;
+      }
+      if (payload.rol !== "Admin") {
+        payload.correo = null;
       }
 
       await api.put(`/api/staff/actualizar/${staffSeleccionado.id}`, payload);
       alert("✅ Datos de Staff actualizados con éxito");
       
-      // Actualizamos el modal y la lista local
       setIsEditando(false);
       cargarStaff();
       setIsViewModalOpen(false);
@@ -186,6 +191,25 @@ const GestionStaff = ({ onBack }) => {
                 <option value="Admin">Admin (Panel Web)</option>
               </select>
             </div>
+
+            {/* 🟢 CONDICIONAL: Solo aparece si el rol seleccionado es Admin */}
+            {nuevoMiembro.rol === "Admin" && (
+              <div className="animate-in fade-in duration-300">
+                <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block">
+                  Correo Electrónico (Recuperación)
+                </label>
+                <input
+                  type="email"
+                  placeholder="admin@liga.com"
+                  className="w-full bg-[#0f172a] p-4 rounded-2xl border border-orange-500/50 text-white outline-none focus:border-orange-500 transition-all font-bold"
+                  onChange={(e) =>
+                    setNuevoMiembro({ ...nuevoMiembro, correo: e.target.value })
+                  }
+                  required={nuevoMiembro.rol === "Admin"}
+                  value={nuevoMiembro.correo}
+                />
+              </div>
+            )}
 
             <button className="w-full bg-orange-600 py-4 rounded-2xl font-black text-white hover:bg-orange-500 transition-all shadow-xl shadow-orange-900/20 mt-4 uppercase tracking-widest">
               Autorizar Acceso
@@ -289,7 +313,6 @@ const GestionStaff = ({ onBack }) => {
             <div className="p-8 space-y-6 flex flex-col items-center">
               {!isEditando ? (
                 <>
-                  {/* 🟢 FOTO DE PERFIL DEL STAFF EN LUGAR DEL QR */}
                   <div className="w-36 h-36 rounded-full border-4 border-orange-500/40 bg-[#0f172a] overflow-hidden flex items-center justify-center shadow-inner mb-2">
                     {staffSeleccionado.foto_perfil ? (
                       <img
@@ -322,6 +345,17 @@ const GestionStaff = ({ onBack }) => {
                       </p>
                     </div>
                   </div>
+
+                  {staffSeleccionado.correo && (
+                    <div className="bg-[#0f172a] p-4 rounded-2xl border border-gray-700 text-left w-full">
+                      <p className="text-gray-500 text-[10px] font-bold uppercase mb-1">
+                        Correo de Recuperación
+                      </p>
+                      <p className="text-orange-400 font-mono text-sm">
+                        {staffSeleccionado.correo}
+                      </p>
+                    </div>
+                  )}
                 </>
               ) : (
                 /* FORMULARIO DE EDICIÓN */
@@ -370,6 +404,23 @@ const GestionStaff = ({ onBack }) => {
                       }
                     />
                   </div>
+
+                  {datosEdicion.rol === "Admin" && (
+                    <div>
+                      <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block">
+                        Correo de Recuperación
+                      </label>
+                      <input
+                        type="email"
+                        className="w-full bg-[#0f172a] p-3 rounded-xl border border-orange-500/50 text-white outline-none focus:border-orange-500 font-bold text-sm"
+                        value={datosEdicion.correo}
+                        onChange={(e) =>
+                          setDatosEdicion({ ...datosEdicion, correo: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                  )}
 
                   <button
                     type="submit"
