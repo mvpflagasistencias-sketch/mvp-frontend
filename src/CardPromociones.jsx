@@ -1,5 +1,5 @@
 // src/CardPromociones.jsx
-import React from 'react';
+import React from "react";
 
 const CardPromociones = ({ alGestionar = () => {} }) => {
   return (
@@ -15,7 +15,7 @@ const CardPromociones = ({ alGestionar = () => {} }) => {
           Gestiona cupones y ofertas.
         </p>
       </div>
-      <button 
+      <button
         onClick={alGestionar}
         className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-3 rounded-xl font-black text-xs uppercase transition-all shadow-lg shadow-yellow-900/40 tracking-widest"
       >

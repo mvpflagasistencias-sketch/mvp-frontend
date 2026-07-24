@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 // IMPORTANTE: Cambiamos axios por nuestra instancia personalizada
-import api from './api';
+import api from "./api";
 
 const RegistroJugadores = ({ onBack }) => {
   const [equipos, setEquipos] = useState([]); // Lista de equipos desde la DB
   const [formData, setFormData] = useState({
-    nombre: '',
-    edad: '',
-    equipo: '', // ID del equipo seleccionado
-    telefono: '',
-    nombre_tutor: '',
-    numero_jersey: '',
-    correo: '',
-    categoria: '', // <--- SE AGREGA AL ESTADO INICIAL
-    foto_perfil: null // 👈 MODIFICACIÓN QUIRÚRGICA: Estado para el string Base64 de la foto
+    nombre: "",
+    edad: "",
+    equipo: "", // ID del equipo seleccionado
+    telefono: "",
+    nombre_tutor: "",
+    numero_jersey: "",
+    correo: "",
+    categoria: "", // <--- SE AGREGA AL ESTADO INICIAL
+    foto_perfil: null, // 👈 MODIFICACIÓN QUIRÚRGICA: Estado para el string Base64 de la foto
   });
 
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ const RegistroJugadores = ({ onBack }) => {
   useEffect(() => {
     const fetchEquipos = async () => {
       try {
-        const res = await api.get('/api/equipos');
+        const res = await api.get("/api/equipos");
         setEquipos(res.data);
       } catch (err) {
         console.error("Error al cargar equipos", err);
@@ -45,27 +45,27 @@ const RegistroJugadores = ({ onBack }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.equipo) return alert("Por favor selecciona un equipo"); 
-    if (!formData.categoria) return alert("Por favor selecciona una categoría"); 
+    if (!formData.equipo) return alert("Por favor selecciona un equipo");
+    if (!formData.categoria) return alert("Por favor selecciona una categoría");
 
     setLoading(true);
     try {
       const datosLimpios = {
         nombre: formData.nombre,
-        correo: formData.correo || '',
+        correo: formData.correo || "",
         telefono: formData.telefono,
         equipo: formData.equipo, // ID seleccionado
         tutor: formData.nombre_tutor,
         categoria: formData.categoria, // <--- SE AGREGA AL ENVÍO
-        foto_perfil: formData.foto_perfil // 👈 MODIFICACIÓN QUIRÚRGICA: Envío de foto al backend
+        foto_perfil: formData.foto_perfil, // 👈 MODIFICACIÓN QUIRÚRGICA: Envío de foto al backend
       };
 
       // Petición a través de la instancia centralizada
-      await api.post('/api/jugadores/registro', datosLimpios);
-      alert('✅ ¡Jugador guardado con éxito y foto de perfil enlazada!');
+      await api.post("/api/jugadores/registro", datosLimpios);
+      alert("✅ ¡Jugador guardado con éxito y foto de perfil enlazada!");
       onBack();
     } catch (err) {
-      alert('❌ Error: ' + (err.response?.data?.error || 'Error interno'));
+      alert("❌ Error: " + (err.response?.data?.error || "Error interno"));
     } finally {
       setLoading(false);
     }
@@ -74,13 +74,14 @@ const RegistroJugadores = ({ onBack }) => {
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
       <div className="bg-[#1e293b] p-8 rounded-3xl border border-gray-700 shadow-2xl">
-        
         <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-5">
           <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">Registro de Atleta</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">
+              Registro de Atleta
+            </h2>
             <p className="text-blue-400 font-medium"></p>
           </div>
-          <button 
+          <button
             onClick={onBack}
             className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl transition-all"
           >
@@ -88,22 +89,35 @@ const RegistroJugadores = ({ onBack }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {/* 👈 MODIFICACIÓN QUIRÚRGICA: Componente visual de captura de foto de perfil credencial */}
           <div className="md:col-span-2 bg-[#141b2e] p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-center gap-6 text-left">
             <div className="w-24 h-24 bg-[#0f172a] rounded-full border-2 border-dashed border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
               {formData.foto_perfil ? (
-                <img src={formData.foto_perfil} alt="Previsualización" className="w-full h-full object-cover" />
+                <img
+                  src={formData.foto_perfil}
+                  alt="Previsualización"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <span className="text-[10px] text-gray-600 font-bold uppercase text-center p-2">Sin Foto</span>
+                <span className="text-[10px] text-gray-600 font-bold uppercase text-center p-2">
+                  Sin Foto
+                </span>
               )}
             </div>
             <div className="space-y-2 w-full">
-              <label className="block text-white text-sm font-bold">Foto Oficial de Credencial</label>
-              <p className="text-gray-500 text-[10px] uppercase font-semibold">Carga la imagen del rostro para la verificación contra "Cachirules" en el campo móvil</p>
-              <input 
-                type="file" 
+              <label className="block text-white text-sm font-bold">
+                Foto Oficial de Credencial
+              </label>
+              <p className="text-gray-500 text-[10px] uppercase font-semibold">
+                Carga la imagen del rostro para la verificación contra
+                "Cachirules" en el campo móvil
+              </p>
+              <input
+                type="file"
                 accept="image/*"
                 onChange={handleFotoChange}
                 className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 file:cursor-pointer transition-all"
@@ -112,43 +126,59 @@ const RegistroJugadores = ({ onBack }) => {
           </div>
 
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Nombre del Jugador</label>
-            <input 
-              type="text" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Nombre del Jugador
+            </label>
+            <input
+              type="text"
               placeholder="Ej. Juan Pérez"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-              onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, nombre: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Correo Electrónico</label>
-            <input 
-              type="email" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
               placeholder="ejemplo@correo.com"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-              onChange={(e) => setFormData({...formData, correo: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, correo: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Edad</label>
-            <input 
-              type="number" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Edad
+            </label>
+            <input
+              type="number"
               placeholder="00"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-              onChange={(e) => setFormData({...formData, edad: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, edad: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Categoría</label>
-            <select 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Categoría
+            </label>
+            <select
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-              onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, categoria: e.target.value })
+              }
               required
               value={formData.categoria}
             >
@@ -161,67 +191,82 @@ const RegistroJugadores = ({ onBack }) => {
           </div>
 
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Equipo</label>
-            <select 
-                className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-                onChange={(e) => setFormData({...formData, equipo: e.target.value})}
-                required
-                value={formData.equipo}
-                >
-                <option value="">-- Elige un equipo --</option>
-                {equipos.map((eq) => (
-                    <option key={eq.id} value={eq.id}>
-                    {eq.nombre_equipo}
-                    </option>
-                ))}
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Equipo
+            </label>
+            <select
+              className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
+              onChange={(e) =>
+                setFormData({ ...formData, equipo: e.target.value })
+              }
+              required
+              value={formData.equipo}
+            >
+              <option value="">-- Elige un equipo --</option>
+              {equipos.map((eq) => (
+                <option key={eq.id} value={eq.id}>
+                  {eq.nombre_equipo}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Teléfono de Contacto</label>
-            <input 
-              type="tel" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Teléfono de Contacto
+            </label>
+            <input
+              type="tel"
               placeholder="10 dígitos"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-              onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, telefono: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Número de Jersey (#)</label>
-            <input 
-              type="number" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Número de Jersey (#)
+            </label>
+            <input
+              type="number"
               placeholder="Ej. 07"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-              onChange={(e) => setFormData({...formData, numero_jersey: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, numero_jersey: e.target.value })
+              }
             />
           </div>
 
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Nombre del Tutor (Opcional)</label>
-            <input 
-              type="text" 
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Nombre del Tutor (Opcional)
+            </label>
+            <input
+              type="text"
               placeholder="En caso de ser menor de edad"
               className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 outline-none"
-              onChange={(e) => setFormData({...formData, nombre_tutor: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, nombre_tutor: e.target.value })
+              }
             />
           </div>
 
           <div className="md:col-span-2 mt-4">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={`w-full py-4 rounded-2xl font-black text-lg transition-all shadow-lg ${
-                loading 
-                ? 'bg-gray-600 cursor-wait' 
-                : 'bg-blue-600 hover:bg-blue-500 shadow-blue-900/20 text-white'
+                loading
+                  ? "bg-gray-600 cursor-wait"
+                  : "bg-blue-600 hover:bg-blue-500 shadow-blue-900/20 text-white"
               }`}
             >
-              {loading ? 'REGISTRANDO...' : 'CONFIRMAR REGISTRO DE JUGADOR'}
+              {loading ? "REGISTRANDO..." : "CONFIRMAR REGISTRO DE JUGADOR"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
