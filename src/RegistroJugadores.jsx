@@ -460,9 +460,7 @@ const RegistroJugadores = ({ onBack }) => {
                         <option value="MIXTO" className="bg-[#0f172a]">
                           MIXTO
                         </option>
-                        <option value="JUVENIL" className="bg-[#0f172a]">
-                          JUVENIL
-                        </option>
+                        
                       </select>
                     </div>
                   </div>
