@@ -69,12 +69,13 @@ const GestionJugadores = ({ alRegistro }) => {
   };
 
   const abrirModal = (jugador) => {
-    // Aseguramos que los campos tengan un respaldo para evitar inputs no controlados
+    // 🟢 Adaptado para soportar múltiples equipos (equipos_ids) y género
     setJugadorAEditar({
       ...jugador,
-      equipo_id: jugador.equipo_id || jugador.equipo || "",
       telefono: jugador.telefono || "",
       categoria: jugador.categoria || "",
+      genero: jugador.genero || "Masculino",
+      equipos_ids: jugador.equipos_ids ? jugador.equipos_ids.split(",").map(Number) : [],
     });
     setIsEditModalOpen(true);
   };
@@ -114,13 +115,13 @@ const GestionJugadores = ({ alRegistro }) => {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Enviamos las llaves estandarizadas para el controlador de Node.js
       await api.put(`/api/jugadores/${jugadorAEditar.id}`, {
         nombre: jugadorAEditar.nombre,
         correo: jugadorAEditar.correo,
         telefono: jugadorAEditar.telefono,
-        equipo: jugadorAEditar.equipo_id,
         categoria: jugadorAEditar.categoria,
+        genero: jugadorAEditar.genero,
+        equipos_ids: jugadorAEditar.equipos_ids,
       });
       alert("✅ Datos actualizados correctamente");
       setIsEditModalOpen(false);
@@ -178,8 +179,8 @@ const GestionJugadores = ({ alRegistro }) => {
           <table className="w-full text-left">
             <thead className="bg-[#0f172a]/50 text-blue-400 text-[10px] uppercase font-black tracking-widest">
               <tr className="text-center">
-                <th className="p-5 text-left">Atleta</th>
-                <th className="p-5">Equipo / Rama</th>
+                <th className="p-5 text-left">Atleta / Género</th>
+                <th className="p-5">Equipos / Rama</th>
                 <th className="p-5">Contacto</th>
                 <th className="p-5">Acciones</th>
               </tr>
@@ -198,22 +199,25 @@ const GestionJugadores = ({ alRegistro }) => {
                     >
                       <div className="flex flex-col">
                         <span>{j.nombre} 🔍</span>
-                        {j.tutor && j.tutor.trim() !== "" && (
-                          <span className="text-gray-500 text-[10px] font-medium lowercase italic tracking-normal mt-0.5">
-                            tutor: {j.tutor}
-                          </span>
-                        )}
+                        <div className="flex gap-2 mt-0.5">
+                          {j.genero && (
+                            <span className="text-blue-400 text-[9px] font-black uppercase tracking-wider">
+                              [{j.genero}]
+                            </span>
+                          )}
+                          {j.tutor && j.tutor.trim() !== "" && (
+                            <span className="text-gray-500 text-[10px] font-medium lowercase italic tracking-normal">
+                              tutor: {j.tutor}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="p-5 text-center">
                       <div className="flex flex-col items-center gap-1">
                         <span className="bg-blue-900/20 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase italic">
-                          {/* 👈 CORRECCIÓN ADICIONAL PARA LA TABLA PRINCIPAL */}
-                          {isNaN(j.nombre_equipo)
-                            ? j.nombre_equipo || "Agente Libre"
-                            : equipos.find(
-                                (e) => e.id === Number(j.nombre_equipo),
-                              )?.nombre_equipo || "Agente Libre"}
+                          {/* 🟢 Renderiza los múltiples equipos separados por coma */}
+                          {j.nombre_equipo || "Agente Libre"}
                         </span>
                         {j.categoria && (
                           <span className="text-[9px] text-gray-500 font-bold tracking-widest">
@@ -261,7 +265,7 @@ const GestionJugadores = ({ alRegistro }) => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#1e293b] w-full max-w-md rounded-3xl border border-gray-700 shadow-2xl overflow-hidden animate-in zoom-in duration-300"
+            className="bg-[#1e293b] w-full max-w-md rounded-3xl border border-gray-700 shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] flex flex-col"
           >
             <div className="bg-[#0f172a] p-6 border-b border-gray-700">
               <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">
@@ -269,7 +273,7 @@ const GestionJugadores = ({ alRegistro }) => {
               </h3>
             </div>
 
-            <form onSubmit={handleUpdateSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleUpdateSubmit} className="p-6 space-y-4 overflow-y-auto">
               <div className="text-left text-white">
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">
                   Nombre del Atleta
@@ -277,7 +281,7 @@ const GestionJugadores = ({ alRegistro }) => {
                 <input
                   type="text"
                   value={jugadorAEditar.nombre || ""}
-                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold uppercase transition-all"
+                  className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white outline-none focus:border-blue-500 font-bold uppercase transition-all text-xs"
                   onChange={(e) =>
                     setJugadorAEditar({
                       ...jugadorAEditar,
@@ -288,27 +292,59 @@ const GestionJugadores = ({ alRegistro }) => {
                 />
               </div>
 
+              {/* 🟢 Selector de Género */}
               <div className="text-left text-white">
                 <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">
-                  Equipo Registrado
+                  Género
                 </label>
                 <select
-                  value={jugadorAEditar.equipo_id || ""}
-                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
+                  value={jugadorAEditar.genero || "Masculino"}
+                  className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
                   onChange={(e) =>
                     setJugadorAEditar({
                       ...jugadorAEditar,
-                      equipo_id: e.target.value,
+                      genero: e.target.value,
                     })
                   }
                 >
-                  <option value="">-- AGENTE LIBRE / SIN EQUIPO --</option>
-                  {equipos.map((eq) => (
-                    <option key={eq.id} value={eq.id}>
-                      {eq.nombre_equipo.toUpperCase()}
-                    </option>
-                  ))}
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenil">Femenil</option>
                 </select>
+              </div>
+
+              {/* 🟢 Selección de Múltiples Equipos (Hasta 4) */}
+              <div className="text-left text-white">
+                <label className="text-gray-500 text-[10px] font-black uppercase mb-1 block tracking-widest">
+                  Equipos Inscritos (Máximo 4)
+                </label>
+                <div className="bg-[#0f172a] border border-gray-700 p-3 rounded-xl max-h-40 overflow-y-auto space-y-2">
+                  {equipos.map((eq) => {
+                    const isSelected = jugadorAEditar.equipos_ids?.includes(eq.id);
+                    return (
+                      <label key={eq.id} className="flex items-center gap-2 text-xs cursor-pointer hover:text-blue-400">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            let currentIds = [...(jugadorAEditar.equipos_ids || [])];
+                            if (e.target.checked) {
+                              if (currentIds.length >= 4) {
+                                alert("⚠️ Un jugador solo puede estar en un máximo de 4 equipos.");
+                                return;
+                              }
+                              currentIds.push(eq.id);
+                            } else {
+                              currentIds = currentIds.filter(id => id !== eq.id);
+                            }
+                            setJugadorAEditar({ ...jugadorAEditar, equipos_ids: currentIds });
+                          }}
+                          className="accent-blue-500 rounded"
+                        />
+                        <span className="uppercase font-bold">{eq.nombre_equipo}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="text-left text-white">
@@ -317,7 +353,7 @@ const GestionJugadores = ({ alRegistro }) => {
                 </label>
                 <select
                   value={jugadorAEditar.categoria || ""}
-                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
+                  className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all uppercase text-xs"
                   onChange={(e) =>
                     setJugadorAEditar({
                       ...jugadorAEditar,
@@ -340,7 +376,7 @@ const GestionJugadores = ({ alRegistro }) => {
                 <input
                   type="text"
                   value={jugadorAEditar.telefono || ""}
-                  className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all"
+                  className="w-full bg-[#0f172a] border border-gray-700 p-3 rounded-xl text-white outline-none focus:border-blue-500 font-bold transition-all text-xs"
                   onChange={(e) =>
                     setJugadorAEditar({
                       ...jugadorAEditar,
@@ -354,13 +390,13 @@ const GestionJugadores = ({ alRegistro }) => {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 bg-gray-800 text-gray-400 py-4 rounded-xl font-black uppercase text-xs tracking-widest"
+                  className="flex-1 bg-gray-800 text-gray-400 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-900/40"
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-900/40"
                 >
                   Guardar
                 </button>
@@ -383,7 +419,7 @@ const GestionJugadores = ({ alRegistro }) => {
             <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-10 text-left relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div className="space-y-2">
                 <span className="bg-blue-500 text-[10px] px-2 py-1 rounded font-black uppercase tracking-widest text-white">
-                  Atleta Verificado
+                  Atleta Verificado {jugadorSeleccionado.genero ? `(${jugadorSeleccionado.genero})` : ""}
                 </span>
                 <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">
                   {jugadorSeleccionado.nombre}
@@ -477,18 +513,11 @@ const GestionJugadores = ({ alRegistro }) => {
                       </div>
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-black">
-                          Equipo / Rama
+                          Equipos / Rama
                         </p>
-                        {/* 👈 MODIFICACIÓN QUIRÚRGICA APLICADA: Intercepta IDs numéricos y renderiza el nombre del equipo real */}
-                        <p className="text-white font-black uppercase italic">
-                          {isNaN(jugadorSeleccionado.nombre_equipo)
-                            ? jugadorSeleccionado.nombre_equipo ||
-                              "Agente Libre"
-                            : equipos.find(
-                                (e) =>
-                                  e.id ===
-                                  Number(jugadorSeleccionado.nombre_equipo),
-                              )?.nombre_equipo || "Agente Libre"}
+                        {/* 🟢 Muestra todos los equipos asignados */}
+                        <p className="text-white font-black uppercase italic text-xs">
+                          {jugadorSeleccionado.nombre_equipo || "Agente Libre"}
                           {jugadorSeleccionado.categoria &&
                             ` - ${jugadorSeleccionado.categoria}`}
                         </p>
