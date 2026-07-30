@@ -14,9 +14,10 @@ const RegistroJugadores = ({ onBack }) => {
     nombre_tutor: "",
     numero_jersey: "",
     correo: "",
-    equiposSeleccionados: [""], // Array para guardar IDs o "OTRO_EQUIPO"
-    equiposManuales: [{}],      // Array para guardar { nombre, categoria }
-    genero: "Masculino",         // Necesario para la validación de rama
+    password: "", // 👈 Agregado aquí
+    equiposSeleccionados: [""],
+    equiposManuales: [{}],
+    genero: "Masculino",
     foto_perfil: null,
   });
 
@@ -406,6 +407,19 @@ const RegistroJugadores = ({ onBack }) => {
               placeholder="Ej. 07"
               className={inputBaseClass}
               onChange={(e) => setFormData({ ...formData, numero_jersey: e.target.value })}
+            />
+          </div>
+
+          {/* Contraseña */}
+          <div className="text-left">
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Contraseña de Acceso</label>
+            <input
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              className={inputBaseClass}
+              value={formData.password || ""}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
             />
           </div>
 
