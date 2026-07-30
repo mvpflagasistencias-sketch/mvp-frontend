@@ -50,7 +50,7 @@ const RegistroJugadores = ({ onBack }) => {
   // 🟢 FUNCIONES DE MANEJO DE EQUIPOS DINÁMICOS
   const agregarEquipo = () => {
     if (formData.equiposSeleccionados.length < 4) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         equiposSeleccionados: [...prev.equiposSeleccionados, ""],
         equiposManuales: [...prev.equiposManuales, {}],
@@ -59,9 +59,13 @@ const RegistroJugadores = ({ onBack }) => {
   };
 
   const eliminarEquipo = (index) => {
-    const nuevosSeleccionados = formData.equiposSeleccionados.filter((_, i) => i !== index);
-    const nuevosManuales = formData.equiposManuales.filter((_, i) => i !== index);
-    setFormData(prev => ({
+    const nuevosSeleccionados = formData.equiposSeleccionados.filter(
+      (_, i) => i !== index,
+    );
+    const nuevosManuales = formData.equiposManuales.filter(
+      (_, i) => i !== index,
+    );
+    setFormData((prev) => ({
       ...prev,
       equiposSeleccionados: nuevosSeleccionados,
       equiposManuales: nuevosManuales,
@@ -71,7 +75,7 @@ const RegistroJugadores = ({ onBack }) => {
   const handleEquipoSelect = (index, value) => {
     const nuevos = [...formData.equiposSeleccionados];
     nuevos[index] = value;
-    setFormData(prev => ({ ...prev, equiposSeleccionados: nuevos }));
+    setFormData((prev) => ({ ...prev, equiposSeleccionados: nuevos }));
   };
 
   // 🟢 handleSubmit UNIFICADO Y BLINDADO (Con la regla de 2 de rama + 2 mixtos)
@@ -81,33 +85,44 @@ const RegistroJugadores = ({ onBack }) => {
     // Validacion de correo
     const regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (formData.correo && !regexCorreo.test(formData.correo)) {
-      alert("⚠️ Por favor, introduce un correo electrónico válido (ej. usuario@gmail.com).");
+      alert(
+        "⚠️ Por favor, introduce un correo electrónico válido (ej. usuario@gmail.com).",
+      );
       return;
     }
 
-    // 🟢 VALIDACIÓN ESTRICTA: Máximo 2 de su rama principal y 2 mixtos
+    // 🟢 VALIDACIÓN ESTRICTA: Máximo 2 de su rama principal y 2 mixtos ESTRICTA DE GÉNERO VS CATEGORÍA Y LÍMITES
     let contadorRamaPrincipal = 0;
     let contadorMixtos = 0;
     let idsFinales = [];
     let manualesFinales = [];
 
+    const generoJugador = (formData.genero || "MASCULINO").toUpperCase();
+
     for (let i = 0; i < formData.equiposSeleccionados.length; i++) {
       const val = formData.equiposSeleccionados[i];
+      let nombreEquipoStr = "";
       let categoriaEquipo = "";
 
       if (val === "OTRO_EQUIPO") {
         const manualObj = formData.equiposManuales?.[i];
         if (!manualObj || !manualObj.nombre) {
-           alert(`⚠️ Por favor completa el nombre del equipo manual #${i+1} o elimínalo.`);
-           return;
+          alert(
+            `⚠️ Por favor completa el nombre del equipo manual #${i + 1} o elimínalo.`,
+          );
+          return;
         }
+        nombreEquipoStr = manualObj.nombre;
         categoriaEquipo = manualObj.categoria || "";
         manualesFinales.push(manualObj);
       } else if (val) {
         const encontrado = equipos.find(
-          (eq) => eq?.nombre_equipo && eq.nombre_equipo.toUpperCase() === val.toUpperCase(),
+          (eq) =>
+            eq?.nombre_equipo &&
+            eq.nombre_equipo.toUpperCase() === val.toUpperCase(),
         );
         if (encontrado) {
+          nombreEquipoStr = encontrado.nombre_equipo;
           categoriaEquipo = encontrado.categoria || "";
           idsFinales.push(encontrado.id);
         }
@@ -116,11 +131,30 @@ const RegistroJugadores = ({ onBack }) => {
       if (!categoriaEquipo) continue;
 
       const catUpper = categoriaEquipo.toUpperCase();
-      const generoJugador = (formData.genero || "MASCULINO").toUpperCase();
-      
-      const esRamaPrincipal = 
-        (generoJugador.includes("MASC") && catUpper.includes("VARONIL")) ||
-        (generoJugador.includes("FEM") && catUpper.includes("FEMENIL"));
+
+      // 🚨 REGLA DE ORO: Un jugador Femenil NO puede ir a Varonil, ni Masculino a Femenil
+      const esHombre =
+        generoJugador.includes("MASC") || generoJugador.includes("VARONIL");
+      const esMujer = generoJugador.includes("FEM");
+
+      if (esHombre && catUpper.includes("FEMENIL")) {
+        alert(
+          `⚠️ Error de inscripción: El atleta es de género Masculino y no puede inscribirse al equipo "${nombreEquipoStr}" que es de categoría FEMENIL.`,
+        );
+        return;
+      }
+
+      if (esMujer && catUpper.includes("VARONIL")) {
+        alert(
+          `⚠️ Error de inscripción: La atleta es de género Femenil y no puede inscribirse al equipo "${nombreEquipoStr}" que es de categoría VARONIL.`,
+        );
+        return;
+      }
+
+      // Conteo para los límites (máximo 2 de su rama y 2 mixtos)
+      const esRamaPrincipal =
+        (esHombre && catUpper.includes("VARONIL")) ||
+        (esMujer && catUpper.includes("FEMENIL"));
 
       if (esRamaPrincipal) {
         contadorRamaPrincipal++;
@@ -130,17 +164,16 @@ const RegistroJugadores = ({ onBack }) => {
     }
 
     if (contadorRamaPrincipal > 2) {
-      alert(`⚠️ Solo puedes pertenecer a un máximo de 2 equipos de tu misma rama. Tienes ${contadorRamaPrincipal}.`);
+      alert(
+        `⚠️ Solo puedes pertenecer a un máximo de 2 equipos de tu misma rama. Tienes ${contadorRamaPrincipal}.`,
+      );
       return;
     }
 
     if (contadorMixtos > 2) {
-      alert(`⚠️ Solo puedes pertenecer a un máximo de 2 equipos MIXTOS. Tienes ${contadorMixtos}.`);
-      return;
-    }
-
-    if (idsFinales.length === 0 && manualesFinales.length === 0) {
-      alert("⚠️ Por favor selecciona o escribe al menos un equipo.");
+      alert(
+        `⚠️ Solo puedes pertenecer a un máximo de 2 equipos MIXTOS. Tienes ${contadorMixtos}.`,
+      );
       return;
     }
 
@@ -149,9 +182,9 @@ const RegistroJugadores = ({ onBack }) => {
       const payload = {
         ...formData,
         equipos_ids: idsFinales,
-        equipos_manuales: manualesFinales
+        equipos_manuales: manualesFinales,
       };
-      
+
       delete payload.equiposSeleccionados;
       delete payload.equiposManuales;
       delete payload.genero;
@@ -167,8 +200,10 @@ const RegistroJugadores = ({ onBack }) => {
   };
 
   // ESTILOS DE TAILWIND
-  const inputBaseClass = "w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
-  const inputErrorClass = "w-full bg-[#0f172a] border-2 border-blue-600 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
+  const inputBaseClass =
+    "w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
+  const inputErrorClass =
+    "w-full bg-[#0f172a] border-2 border-blue-600 p-4 rounded-2xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
 
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
@@ -187,8 +222,10 @@ const RegistroJugadores = ({ onBack }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {/* Foto de perfil */}
           <div className="md:col-span-2 bg-[#141b2e] p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-center gap-6 text-left">
             <div className="w-24 h-24 bg-[#0f172a] rounded-full border-2 border-dashed border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
@@ -209,7 +246,8 @@ const RegistroJugadores = ({ onBack }) => {
                 Foto Oficial de Credencial
               </label>
               <p className="text-gray-500 text-[10px] uppercase font-semibold">
-                Carga la imagen del rostro para la verificación contra "Cachirules" en el campo móvil
+                Carga la imagen del rostro para la verificación contra
+                "Cachirules" en el campo móvil
               </p>
               <input
                 type="file"
@@ -222,53 +260,76 @@ const RegistroJugadores = ({ onBack }) => {
 
           {/* Nombre */}
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Nombre del Jugador</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Nombre del Jugador
+            </label>
             <input
               type="text"
               placeholder="Ej. Juan Pérez"
               className={inputBaseClass}
               value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  nombre: e.target.value.toUpperCase(),
+                })
+              }
               required
             />
           </div>
 
           {/* Correo */}
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Correo Electrónico</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Correo Electrónico
+            </label>
             <input
               type="email"
               placeholder="ejemplo@correo.com"
               className={inputBaseClass}
               value={formData.correo}
-              onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, correo: e.target.value })
+              }
             />
           </div>
 
           {/* Edad */}
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Edad</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Edad
+            </label>
             <input
               type="number"
               placeholder="00"
               className={inputBaseClass}
               value={formData.edad}
-              onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, edad: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Género (Importante para la validación de rama) */}
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Género</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Género
+            </label>
             <select
               className={inputBaseClass}
               value={formData.genero}
-              onChange={(e) => setFormData({ ...formData, genero: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, genero: e.target.value })
+              }
               required
             >
-              <option value="Masculino" className="bg-[#0f172a]">Masculino</option>
-              <option value="Femenil" className="bg-[#0f172a]">Femenil</option>
+              <option value="Masculino" className="bg-[#0f172a]">
+                Masculino
+              </option>
+              <option value="Femenil" className="bg-[#0f172a]">
+                Femenil
+              </option>
             </select>
           </div>
 
@@ -279,7 +340,10 @@ const RegistroJugadores = ({ onBack }) => {
             </label>
 
             {formData.equiposSeleccionados.map((equipoActual, index) => (
-              <div key={index} className="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-gray-800">
+              <div
+                key={index}
+                className="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-gray-800"
+              >
                 <div className="flex gap-4 items-center">
                   <select
                     className={`${inputBaseClass} !p-3 !m-0 flex-1`}
@@ -288,18 +352,24 @@ const RegistroJugadores = ({ onBack }) => {
                     required
                   >
                     <option value="">-- Elige un equipo --</option>
-                    {Array.isArray(equipos) && equipos.map((eq) => {
-                      if (!eq || !eq.nombre_equipo) return null;
-                      const nombreConCategoria = eq.categoria
-                        ? `${eq.nombre_equipo} (${eq.categoria})`
-                        : eq.nombre_equipo;
-                      return (
-                        <option key={eq.id} value={eq.nombre_equipo.toUpperCase()}>
-                          {nombreConCategoria.toUpperCase()}
-                        </option>
-                      );
-                    })}
-                    <option value="OTRO_EQUIPO">+ OTRO (Escribir manualmente)</option>
+                    {Array.isArray(equipos) &&
+                      equipos.map((eq) => {
+                        if (!eq || !eq.nombre_equipo) return null;
+                        const nombreConCategoria = eq.categoria
+                          ? `${eq.nombre_equipo} (${eq.categoria})`
+                          : eq.nombre_equipo;
+                        return (
+                          <option
+                            key={eq.id}
+                            value={eq.nombre_equipo.toUpperCase()}
+                          >
+                            {nombreConCategoria.toUpperCase()}
+                          </option>
+                        );
+                      })}
+                    <option value="OTRO_EQUIPO">
+                      + OTRO (Escribir manualmente)
+                    </option>
                   </select>
 
                   {index > 0 && (
@@ -316,22 +386,23 @@ const RegistroJugadores = ({ onBack }) => {
                 {/* Si selecciona OTRO_EQUIPO */}
                 {equipoActual === "OTRO_EQUIPO" && (
                   <div className="mt-4 space-y-4">
-                     {/* Validación visual de duplicados */}
-                     {Array.isArray(equipos) &&
-                        formData.equiposManuales?.[index]?.nombre &&
-                        equipos.some(
-                          (eq) =>
-                            eq &&
-                            typeof eq.nombre_equipo === "string" &&
-                            eq.nombre_equipo.trim().toUpperCase() ===
-                              (formData.equiposManuales[index]?.nombre || "")
-                                .trim()
-                                .toUpperCase(),
-                        ) && (
-                          <p className="text-red-500 text-xs m-0 p-0">
-                            ⚠️ ¡Este equipo ya existe! Selecciónalo en la lista superior para ahorrar tiempo.
-                          </p>
-                        )}
+                    {/* Validación visual de duplicados */}
+                    {Array.isArray(equipos) &&
+                      formData.equiposManuales?.[index]?.nombre &&
+                      equipos.some(
+                        (eq) =>
+                          eq &&
+                          typeof eq.nombre_equipo === "string" &&
+                          eq.nombre_equipo.trim().toUpperCase() ===
+                            (formData.equiposManuales[index]?.nombre || "")
+                              .trim()
+                              .toUpperCase(),
+                      ) && (
+                        <p className="text-red-500 text-xs m-0 p-0">
+                          ⚠️ ¡Este equipo ya existe! Selecciónalo en la lista
+                          superior para ahorrar tiempo.
+                        </p>
+                      )}
 
                     <div className="flex flex-col sm:flex-row gap-4">
                       <input
@@ -340,12 +411,19 @@ const RegistroJugadores = ({ onBack }) => {
                         placeholder={`NOMBRE DEL EQUIPO MANUAL #${index + 1}`}
                         value={formData.equiposManuales?.[index]?.nombre || ""}
                         onChange={(e) => {
-                          const manualesCopy = [...(formData.equiposManuales || [])];
+                          const manualesCopy = [
+                            ...(formData.equiposManuales || []),
+                          ];
                           manualesCopy[index] = {
                             ...(manualesCopy[index] || {}),
-                            nombre: e.target.value ? e.target.value.toUpperCase() : "",
+                            nombre: e.target.value
+                              ? e.target.value.toUpperCase()
+                              : "",
                           };
-                          setFormData({ ...formData, equiposManuales: manualesCopy });
+                          setFormData({
+                            ...formData,
+                            equiposManuales: manualesCopy,
+                          });
                         }}
                         autoComplete="off"
                         required
@@ -353,21 +431,38 @@ const RegistroJugadores = ({ onBack }) => {
 
                       <select
                         className={`${inputErrorClass} flex-1 !m-0`}
-                        value={formData.equiposManuales?.[index]?.categoria || ""}
+                        value={
+                          formData.equiposManuales?.[index]?.categoria || ""
+                        }
                         onChange={(e) => {
-                          const manualesCopy = [...(formData.equiposManuales || [])];
+                          const manualesCopy = [
+                            ...(formData.equiposManuales || []),
+                          ];
                           manualesCopy[index] = {
                             ...(manualesCopy[index] || {}),
                             categoria: e.target.value,
                           };
-                          setFormData({ ...formData, equiposManuales: manualesCopy });
+                          setFormData({
+                            ...formData,
+                            equiposManuales: manualesCopy,
+                          });
                         }}
                       >
-                        <option value="" className="bg-[#0f172a]">-- Categoría --</option>
-                        <option value="VARONIL" className="bg-[#0f172a]">VARONIL</option>
-                        <option value="FEMENIL" className="bg-[#0f172a]">FEMENIL</option>
-                        <option value="MIXTO" className="bg-[#0f172a]">MIXTO</option>
-                        <option value="JUVENIL" className="bg-[#0f172a]">JUVENIL</option>
+                        <option value="" className="bg-[#0f172a]">
+                          -- Categoría --
+                        </option>
+                        <option value="VARONIL" className="bg-[#0f172a]">
+                          VARONIL
+                        </option>
+                        <option value="FEMENIL" className="bg-[#0f172a]">
+                          FEMENIL
+                        </option>
+                        <option value="MIXTO" className="bg-[#0f172a]">
+                          MIXTO
+                        </option>
+                        <option value="JUVENIL" className="bg-[#0f172a]">
+                          JUVENIL
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -389,48 +484,64 @@ const RegistroJugadores = ({ onBack }) => {
 
           {/* Teléfono */}
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Teléfono de Contacto</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Teléfono de Contacto
+            </label>
             <input
               type="tel"
               placeholder="10 dígitos"
               className={inputBaseClass}
-              onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, telefono: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Número de Jersey */}
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Número de Jersey (#)</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Número de Jersey (#)
+            </label>
             <input
               type="number"
               placeholder="Ej. 07"
               className={inputBaseClass}
-              onChange={(e) => setFormData({ ...formData, numero_jersey: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, numero_jersey: e.target.value })
+              }
             />
           </div>
 
           {/* Contraseña */}
           <div className="text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Contraseña de Acceso</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Contraseña de Acceso
+            </label>
             <input
               type="password"
               placeholder="Mínimo 6 caracteres"
               className={inputBaseClass}
               value={formData.password || ""}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Tutor */}
           <div className="md:col-span-2 text-left">
-            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">Nombre del Tutor (Opcional)</label>
+            <label className="block text-gray-400 text-sm font-bold mb-2 ml-1">
+              Nombre del Tutor (Opcional)
+            </label>
             <input
               type="text"
               placeholder="En caso de ser menor de edad"
               className={inputBaseClass}
-              onChange={(e) => setFormData({ ...formData, nombre_tutor: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, nombre_tutor: e.target.value })
+              }
             />
           </div>
 
