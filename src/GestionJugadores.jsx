@@ -523,6 +523,22 @@ const GestionJugadores = ({ alRegistro }) => {
                         </p>
                       </div>
                     </div>
+
+                    {/* 🟢 Género añadido formalmente en el expediente */}
+                    <div className="flex items-center gap-4">
+                      <div className="bg-indigo-500/10 p-3 rounded-xl text-indigo-400">
+                        🚻
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-[9px] uppercase font-black">
+                          Género
+                        </p>
+                        <p className="text-white font-black uppercase italic text-xs">
+                          {jugadorSeleccionado.genero || "No especificado"}
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-4">
                       <div className="bg-green-500/10 p-3 rounded-xl text-green-400">
                         📱
