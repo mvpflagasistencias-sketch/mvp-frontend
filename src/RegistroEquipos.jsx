@@ -4,6 +4,7 @@ import api from "./api";
 
 const RegistroEquipos = ({ onBack }) => {
   const [nombreEquipo, setNombreEquipo] = useState("");
+  const [categoriaEquipo, setCategoriaEquipo] = useState("Varonil"); // 👈 NUEVO: Estado para la categoría por defecto
   const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +30,8 @@ const RegistroEquipos = ({ onBack }) => {
     const term = busqueda.toLowerCase();
     return (
       eq.nombre_equipo.toLowerCase().includes(term) ||
-      eq.id.toString().includes(term)
+      eq.id.toString().includes(term) ||
+      (eq.categoria && eq.categoria.toLowerCase().includes(term))
     );
   });
 
@@ -46,14 +48,22 @@ const RegistroEquipos = ({ onBack }) => {
   };
 
   // --- FUNCIÓN PARA ACTUALIZAR ---
-  const handleUpdate = async (id, nombreActual) => {
+  const handleUpdate = async (id, nombreActual, categoriaActual) => {
     const nuevoNombre = window.prompt(
       "Editar nombre del equipo:",
       nombreActual,
     );
-    if (nuevoNombre && nuevoNombre !== nombreActual) {
+    if (nuevoNombre !== null) {
+      const nuevaCategoria = window.prompt(
+        "Editar categoría (Varonil / Femenil / Mixto):",
+        categoriaActual || "Varonil",
+      );
+      
       try {
-        await api.put(`/api/equipos/${id}`, { nombre: nuevoNombre });
+        await api.put(`/api/equipos/${id}`, { 
+          nombre: nuevoNombre.trim() !== "" ? nuevoNombre : nombreActual,
+          categoria: nuevaCategoria || categoriaActual || "Varonil"
+        });
         cargarEquipos();
       } catch (err) {
         alert("Error al actualizar");
@@ -65,8 +75,13 @@ const RegistroEquipos = ({ onBack }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/api/equipos/registro", { nombre: nombreEquipo });
+      // Mandamos tanto el nombre como la categoría seleccionada al backend
+      await api.post("/api/equipos/registro", { 
+        nombre: nombreEquipo, 
+        categoria: categoriaEquipo 
+      });
       setNombreEquipo("");
+      setCategoriaEquipo("Varonil");
       cargarEquipos();
     } catch (err) {
       alert("❌ Error al registrar equipo");
@@ -106,6 +121,23 @@ const RegistroEquipos = ({ onBack }) => {
               onChange={(e) => setNombreEquipo(e.target.value)}
               required
             />
+
+            {/* 🚀 NUEVO: Selector de categoría al registrar equipo */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Categoría / Rama:
+              </label>
+              <select
+                value={categoriaEquipo}
+                onChange={(e) => setCategoriaEquipo(e.target.value)}
+                className="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl text-white focus:border-purple-500 outline-none font-bold uppercase transition-all cursor-pointer"
+              >
+                <option value="Varonil">Varonil</option>
+                <option value="Femenil">Femenil</option>
+                <option value="Mixto">Mixto</option>
+              </select>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -145,10 +177,13 @@ const RegistroEquipos = ({ onBack }) => {
                       </td>
                       <td className="p-4 font-bold text-white uppercase">
                         {eq.nombre_equipo}
+                        <div className="text-[10px] text-purple-400 font-normal">
+                          ({eq.categoria || "Varonil"})
+                        </div>
                       </td>
                       <td className="p-4 text-right space-x-3">
                         <button
-                          onClick={() => handleUpdate(eq.id, eq.nombre_equipo)}
+                          onClick={() => handleUpdate(eq.id, eq.nombre_equipo, eq.categoria)}
                           className="hover:scale-125 transition-transform"
                         >
                           ✏️
@@ -164,7 +199,7 @@ const RegistroEquipos = ({ onBack }) => {
                   ))
                 ) : (
                   <tr>
-                    <td className="p-8 text-center text-gray-500 italic">
+                    <td className="p-8 text-center text-gray-500 italic" colSpan="3">
                       {busqueda
                         ? "No se encontraron equipos..."
                         : "No hay equipos registrados"}
