@@ -424,17 +424,17 @@ const MonitorAsistencias = ({ onBack }) => {
                       )}
 
                       <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#141b2e]/40">
-                        {/* AÑADE ESTE DIV AQUÍ */}
                         <div
                           style={{
                             overflowX: "auto",
                             WebkitOverflowScrolling: "touch",
                           }}
                         >
-                          <table className="w-full text-left min-w-[400px]">
+                          <table className="w-full text-left min-w-[500px]">
                             <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
                               <tr>
                                 <th className="p-4">Nombre del Atleta</th>
+                                <th className="p-4">Equipo del Atleta</th>
                                 <th className="p-4">Oficial Monitor</th>
                                 <th className="p-4">Hora Check-in</th>
                                 <th className="p-4 text-center">Estatus</th>
@@ -460,6 +460,9 @@ const MonitorAsistencias = ({ onBack }) => {
                                 >
                                   <td className="p-4 font-bold text-white uppercase whitespace-nowrap">
                                     {j.jugador_nombre}
+                                  </td>
+                                  <td className="p-4 font-semibold text-green-400 uppercase whitespace-nowrap">
+                                    🏷️ {j.equipo_nombre}
                                   </td>
                                   <td className="p-4 text-gray-400 italic uppercase whitespace-nowrap">
                                     {j.staff_nombre}
