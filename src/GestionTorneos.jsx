@@ -33,7 +33,7 @@ export default function GestionTorneos({ onBack }) {
     try {
       await api.post('/api/torneos', { nombre_torneo: nombreTorneo });
       setNombreTorneo('');
-      cargarTorneos();
+      cargarTorneos(); // Recarga la lista automáticamente para que aparezca el nuevo torneo
     } catch (error) {
       console.error("Error al crear torneo:", error);
     }
