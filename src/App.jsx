@@ -87,7 +87,7 @@ function App() {
             
             {/* 🟢 3. Añadir la tarjeta visual del Módulo de Torneos */}
             <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 hover:border-pink-500 transition-all text-left shadow-lg">
-              <div className="text-4xl mb-4">📅</div>
+              <div className="text-4xl mb-4">🏆</div>
               <h3 className="text-xl font-bold mb-2 text-pink-400 uppercase italic">Torneos</h3>
               <p className="text-gray-400 text-sm mb-6">Gestión de ediciones y categorías.</p>
               <button onClick={() => setView('torneos')} className="w-full bg-pink-600 hover:bg-pink-500 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all">Gestionar</button>
