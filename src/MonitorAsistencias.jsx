@@ -357,7 +357,7 @@ const MonitorAsistencias = ({ onBack }) => {
                     </div>
                   </div>
 
-                  {/* Sub-Tabla Desplegable de Jugadores */}
+                  {/* Sub-Tabla Desplegable de Jugadores en 2 Columnas */}
                   {isSelected && (
                     <div className="border-t border-gray-800 bg-[#0f172a]/50 p-4 animate-in slide-in-from-top-4 duration-300">
                       {/* EVOLUCIÓN COMPOSICIÓN WEB: Despliegue en Grid de dos columnas para separar las planillas */}
@@ -423,61 +423,166 @@ const MonitorAsistencias = ({ onBack }) => {
                         </div>
                       )}
 
-                      <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#141b2e]/40">
-                        {/* AÑADE ESTE DIV AQUÍ */}
-                        <div
-                          style={{
-                            overflowX: "auto",
-                            WebkitOverflowScrolling: "touch",
-                          }}
-                        >
-                          <table className="w-full text-left min-w-[400px]">
-                            <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
-                              <tr>
-                                <th className="p-4">Nombre del Atleta</th>
-                                <th className="p-4">Oficial Monitor</th>
-                                <th className="p-4">Hora Check-in</th>
-                                <th className="p-4 text-center">Estatus</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-800/60 text-xs">
-                              {p.jugadores.map((j, subIdx) => (
-                                <tr
-                                  key={j.id_jugador || subIdx}
-                                  onClick={() =>
-                                    verDetalle({
-                                      id_jugador: j.id_jugador,
-                                      jugador: j.jugador_nombre,
-                                      nombre_equipo: j.equipo_nombre,
-                                      staff: j.staff_nombre,
-                                      fecha: j.fecha,
-                                      hora: j.hora,
-                                      latitud: j.latitud,
-                                      longitud: j.longitud,
-                                    })
-                                  }
-                                  className="hover:bg-green-500/5 cursor-pointer transition-all"
-                                >
-                                  <td className="p-4 font-bold text-white uppercase whitespace-nowrap">
-                                    {j.jugador_nombre}
-                                  </td>
-                                  <td className="p-4 text-gray-400 italic uppercase whitespace-nowrap">
-                                    {j.staff_nombre}
-                                  </td>
-                                  <td className="p-4 font-mono text-white whitespace-nowrap">
-                                    {j.hora}
-                                  </td>
-                                  <td className="p-4 text-center">
-                                    <span
-                                      className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
-                                    >
-                                      {j.latitud ? "📍 GPS OK" : "OK"}
-                                    </span>
-                                  </td>
+                      {/* GRID DE DOS COLUMNAS: LOCAL VS VISITANTE */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* COLUMNA LOCAL (AZUL) */}
+                        <div className="rounded-2xl border border-blue-900/50 bg-[#141b2e]/60 overflow-hidden shadow-lg">
+                          <div className="bg-blue-950/80 px-4 py-3 border-b border-blue-900/50 flex justify-between items-center">
+                            <span className="text-blue-400 text-xs font-black uppercase tracking-wider truncate max-w-[200px]">
+                              🔵 {p.equipo_local}
+                            </span>
+                            <span className="bg-blue-900 text-blue-200 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                              {p.jugadores_local ? p.jugadores_local.length : 0}{" "}
+                              Jugs
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              overflowX: "auto",
+                              WebkitOverflowScrolling: "touch",
+                            }}
+                          >
+                            <table className="w-full text-left min-w-[300px]">
+                              <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
+                                <tr>
+                                  <th className="p-3">Atleta</th>
+                                  <th className="p-3">Monitor</th>
+                                  <th className="p-3">Hora</th>
+                                  <th className="p-3 text-center">GPS</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-gray-800/60 text-xs">
+                                {p.jugadores_local &&
+                                  p.jugadores_local.map((j, subIdx) => (
+                                    <tr
+                                      key={j.id_jugador || subIdx}
+                                      onClick={() =>
+                                        verDetalle({
+                                          id_jugador: j.id_jugador,
+                                          jugador: j.jugador_nombre,
+                                          nombre_equipo: j.equipo_nombre,
+                                          staff: j.staff_nombre,
+                                          fecha: j.fecha,
+                                          hora: j.hora,
+                                          latitud: j.latitud,
+                                          longitud: j.longitud,
+                                        })
+                                      }
+                                      className="hover:bg-blue-500/10 cursor-pointer transition-all"
+                                    >
+                                      <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
+                                        {j.jugador_nombre}
+                                      </td>
+                                      <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
+                                        {j.staff_nombre}
+                                      </td>
+                                      <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
+                                        {j.hora}
+                                      </td>
+                                      <td className="p-3 text-center">
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
+                                        >
+                                          {j.latitud ? "GPS" : "OK"}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                {(!p.jugadores_local ||
+                                  p.jugadores_local.length === 0) && (
+                                  <tr>
+                                    <td
+                                      colSpan="4"
+                                      className="p-6 text-center text-gray-500 italic text-xs"
+                                    >
+                                      No hay registros locales aún
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* COLUMNA VISITANTE (ROJO) */}
+                        <div className="rounded-2xl border border-red-900/50 bg-[#141b2e]/60 overflow-hidden shadow-lg">
+                          <div className="bg-red-950/80 px-4 py-3 border-b border-red-900/50 flex justify-between items-center">
+                            <span className="text-red-400 text-xs font-black uppercase tracking-wider truncate max-w-[200px]">
+                              🔴 {p.equipo_visitante}
+                            </span>
+                            <span className="bg-red-900 text-red-200 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                              {p.jugadores_visitante
+                                ? p.jugadores_visitante.length
+                                : 0}{" "}
+                              Jugs
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              overflowX: "auto",
+                              WebkitOverflowScrolling: "touch",
+                            }}
+                          >
+                            <table className="w-full text-left min-w-[300px]">
+                              <thead className="bg-[#0f172a] text-gray-500 text-[9px] uppercase font-black tracking-widest">
+                                <tr>
+                                  <th className="p-3">Atleta</th>
+                                  <th className="p-3">Monitor</th>
+                                  <th className="p-3">Hora</th>
+                                  <th className="p-3 text-center">GPS</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-800/60 text-xs">
+                                {p.jugadores_visitante &&
+                                  p.jugadores_visitante.map((j, subIdx) => (
+                                    <tr
+                                      key={j.id_jugador || subIdx}
+                                      onClick={() =>
+                                        verDetalle({
+                                          id_jugador: j.id_jugador,
+                                          jugador: j.jugador_nombre,
+                                          nombre_equipo: j.equipo_nombre,
+                                          staff: j.staff_nombre,
+                                          fecha: j.fecha,
+                                          hora: j.hora,
+                                          latitud: j.latitud,
+                                          longitud: j.longitud,
+                                        })
+                                      }
+                                      className="hover:bg-red-500/10 cursor-pointer transition-all"
+                                    >
+                                      <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
+                                        {j.jugador_nombre}
+                                      </td>
+                                      <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
+                                        {j.staff_nombre}
+                                      </td>
+                                      <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
+                                        {j.hora}
+                                      </td>
+                                      <td className="p-3 text-center">
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
+                                        >
+                                          {j.latitud ? "GPS" : "OK"}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                {(!p.jugadores_visitante ||
+                                  p.jugadores_visitante.length === 0) && (
+                                  <tr>
+                                    <td
+                                      colSpan="4"
+                                      className="p-6 text-center text-gray-500 italic text-xs"
+                                    >
+                                      No hay registros visitantes aún
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -494,7 +599,6 @@ const MonitorAsistencias = ({ onBack }) => {
           )}
         </div>
       )}
-
       {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
       {activeTab === "historial" && (
         <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
