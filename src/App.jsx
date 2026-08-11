@@ -7,6 +7,7 @@ import GestionStaff from './GestionStaff.jsx';
 import MonitorAsistencias from './MonitorAsistencias.jsx'; 
 import CardPromociones from './CardPromociones.jsx';
 import GestionPromociones from './GestionPromociones.jsx';
+import GestionTorneos from './GestionTorneos.jsx'; // 🟢 1. Importar el componente
 
 function App() {
   const [user, setUser] = useState(null);
@@ -54,6 +55,8 @@ function App() {
         return <MonitorAsistencias onBack={() => setView('dashboard')} />;
       case 'promociones':
         return <GestionPromociones onBack={() => setView('dashboard')} />;
+      case 'torneos': // 🟢 2. Añadir la ruta en el switch
+        return <GestionTorneos onBack={() => setView('dashboard')} />;
       default:
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
@@ -81,6 +84,15 @@ function App() {
               <p className="text-gray-400 text-sm mb-6">Gestión de ligas y clubes.</p>
               <button onClick={() => setView('equipos')} className="w-full bg-purple-600 py-3 rounded-xl font-bold">Gestionar</button>
             </div>
+            
+            {/* 🟢 3. Añadir la tarjeta visual del Módulo de Torneos */}
+            <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 hover:border-pink-500 transition-all text-left shadow-lg">
+              <div className="text-4xl mb-4">📅</div>
+              <h3 className="text-xl font-bold mb-2 text-pink-400 uppercase italic">Torneos</h3>
+              <p className="text-gray-400 text-sm mb-6">Gestión de ediciones y categorías.</p>
+              <button onClick={() => setView('torneos')} className="w-full bg-pink-600 hover:bg-pink-500 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all">Gestionar</button>
+            </div>
+
             <div className="bg-[#1e293b] p-6 rounded-3xl border border-gray-700 hover:border-orange-500 transition-all text-left border-orange-500/30 shadow-lg">
               <div className="text-4xl mb-4">🔑</div>
               <h3 className="text-xl font-bold mb-2 text-white">Control Staff</h3>
