@@ -274,12 +274,16 @@ const MonitorAsistencias = ({ onBack }) => {
                     className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer select-none bg-[#131b2e]/60"
                   >
                     <div>
-                      <div className="flex gap-2 mb-1 items-center">
+                      <div className="flex gap-2 mb-1 items-center flex-wrap">
                         <span className="bg-blue-900/40 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">
                           Jornada {p.jornada}
                         </span>
                         <span className="bg-purple-900/40 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">
                           {p.categoria || "Sin Categoría"}
+                        </span>
+                        {/* 🏆 NUEVO: Nombre del Torneo */}
+                        <span className="bg-pink-500/10 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">
+                          🏆 {p.nombre_torneo || "Torneo General"}
                         </span>
                       </div>
                       <h3 className="text-xl font-extrabold text-white uppercase tracking-tight">
@@ -529,6 +533,10 @@ const MonitorAsistencias = ({ onBack }) => {
                         <p className="text-[10px] text-gray-500 uppercase font-medium">
                           J{a.jornada} - {a.equipo_local} vs{" "}
                           {a.equipo_visitante}
+                        </p>
+                        {/* 🏆 NUEVO: Nombre del Torneo en el Historial */}
+                        <p className="text-[9px] text-pink-400 font-bold uppercase mt-0.5">
+                          🏆 {a.nombre_torneo || "Torneo General"}
                         </p>
                       </td>
                       {/* AQUÍ TAMBIÉN USAMOS EL DATO DIRECTO */}
