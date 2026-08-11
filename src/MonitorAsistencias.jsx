@@ -53,7 +53,7 @@ const MonitorAsistencias = ({ onBack }) => {
         if (params.length > 0) url += `?${params.join("&")}`;
 
         const res = await api.get(url);
-        setPartidosAgrupados(res.data);
+        setPartidosAgrupados(res.data || []);
       } else if (activeTab === "historial") {
         let url = "/api/asistencias/historial";
         const params = [];
@@ -62,10 +62,10 @@ const MonitorAsistencias = ({ onBack }) => {
         if (params.length > 0) url += `?${params.join("&")}`;
 
         const res = await api.get(url);
-        setHistorialCompleto(res.data);
+        setHistorialCompleto(res.data || []);
       } else if (activeTab === "metricas") {
         const res = await api.get("/api/asistencias/historial");
-        setAsistenciasRecientes(res.data);
+        setAsistenciasRecientes(res.data || []);
       }
     } catch (err) {
       console.error("❌ Error en la sincronización web:", err);
@@ -98,7 +98,7 @@ const MonitorAsistencias = ({ onBack }) => {
     conducirAcumuladas();
   }, [isModalOpen, asistenciaSeleccionada]);
 
-  // MODIFICACIÓN EXCLUSIVA: Escucha global para cerrar cualquier modal abierto con la tecla ESC
+  // Escucha global para cerrar cualquier modal abierto con la tecla ESC
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -110,7 +110,7 @@ const MonitorAsistencias = ({ onBack }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ABRIR MODAL ORIGINAL (UNIFICA ID JUGADOR PARA AMBAS PESTAÑAS)
+  // ABRIR MODAL ORIGINAL
   const verDetalle = (asistencia) => {
     const idRealAtleta = asistencia.id_jugador || asistencia.jugador_id;
     setAsistenciaSeleccionada({
@@ -126,14 +126,14 @@ const MonitorAsistencias = ({ onBack }) => {
     setFotoModalTitulo(tituloCorto);
   };
 
-  // CONTADORES MATEMÁTICOS PARA LA PESTAÑA DE MÉTRICAS (MERN)
-  const totalPasesRegistrados = asistenciasRecientes.length;
-  const pasesConGps = asistenciasRecientes.filter((a) => a.latitud).length;
+  // CONTADORES MATEMÁTICOS BLINDADOS CONTRA NULOS
+  const totalPasesRegistrados = (asistenciasRecientes || []).length;
+  const pasesConGps = (asistenciasRecientes || []).filter((a) => a.latitud).length;
   const jornadasUnicas = [
-    ...new Set(asistenciasRecientes.map((a) => a.jornada).filter(Boolean)),
+    ...new Set((asistenciasRecientes || []).map((a) => a.jornada).filter(Boolean)),
   ].sort((a, b) => a - b);
   const categoriesUnicas = [
-    ...new Set(asistenciasRecientes.map((a) => a.categoria).filter(Boolean)),
+    ...new Set((asistenciasRecientes || []).map((a) => a.categoria).filter(Boolean)),
   ];
 
   return (
@@ -253,7 +253,7 @@ const MonitorAsistencias = ({ onBack }) => {
       {/* ================= PESTAÑA 1: POR PARTIDOS ================= */}
       {activeTab === "partidos" && (
         <div className="grid grid-cols-1 gap-4">
-          {[...partidosAgrupados]
+          {[...(partidosAgrupados || [])]
             .sort(
               (a, b) =>
                 new Date(b.fecha_maxima || 0) - new Date(a.fecha_maxima || 0),
@@ -281,7 +281,6 @@ const MonitorAsistencias = ({ onBack }) => {
                         <span className="bg-purple-900/40 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">
                           {p.categoria || "Sin Categoría"}
                         </span>
-                        {/* 🏆 NUEVO: Nombre del Torneo */}
                         <span className="bg-pink-500/10 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">
                           🏆 {p.nombre_torneo || "Torneo General"}
                         </span>
@@ -308,7 +307,6 @@ const MonitorAsistencias = ({ onBack }) => {
                         </p>
                       </div>
 
-                      {/* EVOLUCIÓN COMPOSICIÓN WEB: Doble miniatura asimétrica en la vista previa de la fila */}
                       <div className="flex gap-1.5 items-center bg-[#0f172a]/80 p-1.5 rounded-xl border border-gray-800">
                         {p.foto_local_url ? (
                           <div
@@ -360,10 +358,8 @@ const MonitorAsistencias = ({ onBack }) => {
                   {/* Sub-Tabla Desplegable de Jugadores en 2 Columnas */}
                   {isSelected && (
                     <div className="border-t border-gray-800 bg-[#0f172a]/50 p-4 animate-in slide-in-from-top-4 duration-300">
-                      {/* EVOLUCIÓN COMPOSICIÓN WEB: Despliegue en Grid de dos columnas para separar las planillas */}
                       {(p.foto_local_url || p.foto_visitante_url) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          {/* CONTENEDOR PLANILLA LOCAL */}
                           <div className="p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex items-center justify-between gap-4">
                             <div>
                               <p className="text-blue-400 text-xs font-black uppercase tracking-wider">
@@ -392,7 +388,6 @@ const MonitorAsistencias = ({ onBack }) => {
                             )}
                           </div>
 
-                          {/* CONTENEDOR PLANILLA VISITANTE */}
                           <div className="p-4 bg-[#141b2e] border border-gray-800 rounded-2xl flex items-center justify-between gap-4">
                             <div>
                               <p className="text-red-400 text-xs font-black uppercase tracking-wider">
@@ -432,8 +427,7 @@ const MonitorAsistencias = ({ onBack }) => {
                               🔵 {p.equipo_local}
                             </span>
                             <span className="bg-blue-900 text-blue-200 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                              {p.jugadores_local ? p.jugadores_local.length : 0}{" "}
-                              Jugs
+                              {p.jugadores_local ? p.jugadores_local.length : 0} Jugs
                             </span>
                           </div>
                           <div
@@ -452,42 +446,41 @@ const MonitorAsistencias = ({ onBack }) => {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-800/60 text-xs">
-                                {p.jugadores_local &&
-                                  p.jugadores_local.map((j, subIdx) => (
-                                    <tr
-                                      key={j.id_jugador || subIdx}
-                                      onClick={() =>
-                                        verDetalle({
-                                          id_jugador: j.id_jugador,
-                                          jugador: j.jugador_nombre,
-                                          nombre_equipo: j.equipo_nombre,
-                                          staff: j.staff_nombre,
-                                          fecha: j.fecha,
-                                          hora: j.hora,
-                                          latitud: j.latitud,
-                                          longitud: j.longitud,
-                                        })
-                                      }
-                                      className="hover:bg-blue-500/10 cursor-pointer transition-all"
-                                    >
-                                      <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
-                                        {j.jugador_nombre}
-                                      </td>
-                                      <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
-                                        {j.staff_nombre}
-                                      </td>
-                                      <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
-                                        {j.hora}
-                                      </td>
-                                      <td className="p-3 text-center">
-                                        <span
-                                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
-                                        >
-                                          {j.latitud ? "GPS" : "OK"}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  ))}
+                                {(p.jugadores_local || []).map((j, subIdx) => (
+                                  <tr
+                                    key={j.id_jugador || subIdx}
+                                    onClick={() =>
+                                      verDetalle({
+                                        id_jugador: j.id_jugador,
+                                        jugador: j.jugador_nombre,
+                                        nombre_equipo: j.equipo_nombre,
+                                        staff: j.staff_nombre,
+                                        fecha: j.fecha,
+                                        hora: j.hora,
+                                        latitud: j.latitud,
+                                        longitud: j.longitud,
+                                      })
+                                    }
+                                    className="hover:bg-blue-500/10 cursor-pointer transition-all"
+                                  >
+                                    <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
+                                      {j.jugador_nombre}
+                                    </td>
+                                    <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
+                                      {j.staff_nombre}
+                                    </td>
+                                    <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
+                                      {j.hora}
+                                    </td>
+                                    <td className="p-3 text-center">
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
+                                      >
+                                        {j.latitud ? "GPS" : "OK"}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
                                 {(!p.jugadores_local ||
                                   p.jugadores_local.length === 0) && (
                                   <tr>
@@ -533,42 +526,41 @@ const MonitorAsistencias = ({ onBack }) => {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-800/60 text-xs">
-                                {p.jugadores_visitante &&
-                                  p.jugadores_visitante.map((j, subIdx) => (
-                                    <tr
-                                      key={j.id_jugador || subIdx}
-                                      onClick={() =>
-                                        verDetalle({
-                                          id_jugador: j.id_jugador,
-                                          jugador: j.jugador_nombre,
-                                          nombre_equipo: j.equipo_nombre,
-                                          staff: j.staff_nombre,
-                                          fecha: j.fecha,
-                                          hora: j.hora,
-                                          latitud: j.latitud,
-                                          longitud: j.longitud,
-                                        })
-                                      }
-                                      className="hover:bg-red-500/10 cursor-pointer transition-all"
-                                    >
-                                      <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
-                                        {j.jugador_nombre}
-                                      </td>
-                                      <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
-                                        {j.staff_nombre}
-                                      </td>
-                                      <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
-                                        {j.hora}
-                                      </td>
-                                      <td className="p-3 text-center">
-                                        <span
-                                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
-                                        >
-                                          {j.latitud ? "GPS" : "OK"}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  ))}
+                                {(p.jugadores_visitante || []).map((j, subIdx) => (
+                                  <tr
+                                    key={j.id_jugador || subIdx}
+                                    onClick={() =>
+                                      verDetalle({
+                                        id_jugador: j.id_jugador,
+                                        jugador: j.jugador_nombre,
+                                        nombre_equipo: j.equipo_nombre,
+                                        staff: j.staff_nombre,
+                                        fecha: j.fecha,
+                                        hora: j.hora,
+                                        latitud: j.latitud,
+                                        longitud: j.longitud,
+                                      })
+                                    }
+                                    className="hover:bg-red-500/10 cursor-pointer transition-all"
+                                  >
+                                    <td className="p-3 font-bold text-white uppercase whitespace-nowrap">
+                                      {j.jugador_nombre}
+                                    </td>
+                                    <td className="p-3 text-gray-400 italic uppercase whitespace-nowrap text-[10px]">
+                                      {j.staff_nombre}
+                                    </td>
+                                    <td className="p-3 font-mono text-white whitespace-nowrap text-[11px]">
+                                      {j.hora}
+                                    </td>
+                                    <td className="p-3 text-center">
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${j.latitud ? "bg-green-950 text-green-400 border border-green-800" : "bg-gray-800 text-gray-400"}`}
+                                      >
+                                        {j.latitud ? "GPS" : "OK"}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
                                 {(!p.jugadores_visitante ||
                                   p.jugadores_visitante.length === 0) && (
                                   <tr>
@@ -599,13 +591,14 @@ const MonitorAsistencias = ({ onBack }) => {
           )}
         </div>
       )}
+
       {/* ================= PESTAÑA 2: HISTORIAL GENERAL ================= */}
       {activeTab === "historial" && (
         <div className="bg-[#1e293b] rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
           <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             <table className="w-full text-left min-w-[500px]">
               <tbody className="divide-y divide-gray-800">
-                {[...historialCompleto]
+                {[...(historialCompleto || [])]
                   .sort(
                     (a, b) =>
                       new Date(`${a.fecha}T${a.hora}`) -
@@ -620,7 +613,6 @@ const MonitorAsistencias = ({ onBack }) => {
                           id_jugador: a.id_jugador || a.jugador_id,
                           jugador: a.jugador_nombre,
                           nombre_equipo: a.jugador_equipo_original,
-                          // AQUÍ USAMOS DIRECTAMENTE EL DATO QUE VIENE DE LA DB
                           staff: a.staff_nombre || "SIN STAFF",
                           fecha: a.fecha,
                           hora: a.hora,
@@ -638,12 +630,10 @@ const MonitorAsistencias = ({ onBack }) => {
                           J{a.jornada} - {a.equipo_local} vs{" "}
                           {a.equipo_visitante}
                         </p>
-                        {/* 🏆 NUEVO: Nombre del Torneo en el Historial */}
                         <p className="text-[9px] text-pink-400 font-bold uppercase mt-0.5">
                           🏆 {a.nombre_torneo || "Torneo General"}
                         </p>
                       </td>
-                      {/* AQUÍ TAMBIÉN USAMOS EL DATO DIRECTO */}
                       <td className="p-5 text-gray-400 text-xs font-bold uppercase italic whitespace-nowrap">
                         {a.staff_nombre || "SIN STAFF"}
                       </td>
@@ -780,7 +770,6 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* SECCIÓN HISTÓRICA ACUMULADA UNIFICADA CON AUDITORÍA GPS POR REGISTRO */}
               <div className="pt-4 border-t border-gray-800 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">
@@ -792,7 +781,7 @@ const MonitorAsistencias = ({ onBack }) => {
                 </div>
 
                 <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-2xl custom-scrollbar">
-                  {[...acumuladasJugador]
+                  {[...(acumuladasJugador || [])]
                     .sort(
                       (a, b) =>
                         new Date(`${a.fecha}T${a.hora}`) -
